@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>FPS ARENA</title>
+<style>
+  :root { --safe-l: env(safe-area-inset-left, 0px); --safe-r: env(safe-area-inset-right, 0px); --safe-b: env(safe-area-inset-bottom, 0px); --safe-t: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #000; color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  #game { position: fixed; inset: 0; }
+  #game canvas { display: block; width: 100%; height: 100%; }
+  .hidden { display: none !important; }
+
+  /* ---- menu ---- */
+  #menu { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
+    background: rgba(8, 12, 24, .55); backdrop-filter: blur(3px); }
+  .card { width: min(480px, 92vw); max-height: 94vh; overflow: auto; background: rgba(20, 26, 44, .92); border: 1px solid #3a4770;
+    border-radius: 16px; padding: 20px 22px; }
+  .card h1 { margin: 0 0 4px; font-size: 28px; letter-spacing: 2px; }
+  .card .sub { margin: 0 0 14px; color: #9fb0d8; font-size: 13px; }
+  .row { display: flex; gap: 8px; align-items: center; margin: 10px 0; }
+  .row label { font-size: 13px; color: #b9c6e8; min-width: 64px; }
+  input[type=text] { flex: 1; min-width: 0; padding: 12px; font-size: 16px; border-radius: 10px; border: 1px solid #455388; background: #0f1426; color: #fff; }
+  input[type=range] { flex: 1; }
+  .btn { padding: 14px 16px; font-size: 16px; font-weight: 700; border: 0; border-radius: 12px; color: #fff; background: #3b5bdb; cursor: pointer; }
+  .btn.main { width: 100%; font-size: 19px; padding: 17px; background: linear-gradient(135deg, #ff6b3d, #ff3d7f); }
+  .btn.sub2 { background: #2f3b66; }
+  .btn:active { filter: brightness(.85); }
+  #status { min-height: 22px; margin-top: 10px; font-size: 14px; color: #ffd166; }
+  .help { margin-top: 12px; font-size: 12px; color: #8a99c4; line-height: 1.6; }
+  .controlSettings { margin: 10px 0; padding: 10px 12px; border: 1px solid #344055; border-radius: 10px; background: rgba(0,0,0,.18); }
+  .controlSettings summary { cursor: pointer; color: #d0d8e7; font-size: 14px; font-weight: 700; }
+  .controlSettings .row { margin: 7px 0; }
+  .controlSettings .row label { min-width: 132px; font-size: 12px; }
+  .controlSettings output { width: 42px; text-align: right; color: #ffd166; font-size: 12px; }
+
+  /* ---- hud ---- */
+  #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+  #roomInfo { position: absolute; left: calc(12px + var(--safe-l)); top: calc(10px + var(--safe-t)); font-size: 13px; background: rgba(0,0,0,.4); padding: 6px 10px; border-radius: 8px; }
+  #btnLeave { position: absolute; left: calc(12px + var(--safe-l)); top: calc(46px + var(--safe-t)); pointer-events: auto;
+    background: rgba(0,0,0,.45); color: #fff; border: 1px solid #ffffff55; border-radius: 8px; padding: 6px 12px; font-size: 13px; }
+  #ammo { position: absolute; left: 50%; top: calc(12px + var(--safe-t)); transform: translateX(-50%); font-size: 18px; font-weight: 800; text-shadow: 0 1px 3px #000; }
+  #bombInfo { position: absolute; left: 50%; top: calc(38px + var(--safe-t)); transform: translateX(-50%); font-size: 13px; font-weight: 700; color: #ffd18a; text-shadow: 0 1px 3px #000; }
+  #board { position: absolute; right: calc(12px + var(--safe-r)); top: calc(10px + var(--safe-t)); min-width: 150px; background: rgba(0,0,0,.4); border-radius: 8px; padding: 6px 10px; font-size: 13px; }
+  #board .r { display: flex; justify-content: space-between; gap: 12px; padding: 1px 0; }
+  #board .r.me { color: #ffd166; font-weight: 700; }
+  #board .t { color: #9fb0d8; font-size: 11px; margin-bottom: 2px; }
+  #feed { position: absolute; right: calc(12px + var(--safe-r)); top: calc(150px + var(--safe-t)); text-align: right; font-size: 13px; }
+  #feed div { background: rgba(0,0,0,.45); padding: 3px 8px; border-radius: 6px; margin-top: 3px; display: inline-block; clear: both; float: right; }
+  #cross { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; transform: translate(-50%,-50%); }
+  #cross::before, #cross::after { content: ""; position: absolute; background: #fff; box-shadow: 0 0 2px #000; }
+  #cross::before { left: 10px; top: 0; width: 2px; height: 22px; -webkit-mask: linear-gradient(#000 0 7px, transparent 7px 15px, #000 15px); mask: linear-gradient(#000 0 7px, transparent 7px 15px, #000 15px); }
+  #cross::after { top: 10px; left: 0; height: 2px; width: 22px; -webkit-mask: linear-gradient(90deg, #000 0 7px, transparent 7px 15px, #000 15px); mask: linear-gradient(90deg, #000 0 7px, transparent 7px 15px, #000 15px); }
+  #hitm { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; transform: translate(-50%,-50%) rotate(45deg); opacity: 0; transition: opacity .15s; }
+  #hitm::before, #hitm::after { content: ""; position: absolute; background: currentColor; }
+  #hitm::before { left: 14px; top: 0; width: 3px; height: 30px; }
+  #hitm::after { top: 14px; left: 0; height: 3px; width: 30px; }
+  #dmg { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 45%, rgba(255,0,0,.75) 100%); opacity: 0; transition: opacity .35s; }
+  #banner { position: absolute; left: 50%; top: 28%; transform: translateX(-50%); font-size: 34px; font-weight: 900; text-shadow: 0 2px 8px #000; text-align: center; }
+  #deadmsg { position: absolute; left: 50%; top: 42%; transform: translateX(-50%); font-size: 24px; font-weight: 800; color: #ff6b6b; text-shadow: 0 2px 6px #000; }
+  #resume { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.45); font-size: 22px; font-weight: 700; cursor: pointer; }
+
+  /* ---- touch ---- */
+  #touch { position: fixed; inset: 0; z-index: 12; }
+  #stickZone { position: absolute; left: 0; top: 0; width: 42%; height: 100%; }
+  #lookZone { position: absolute; right: 0; top: 0; width: 58%; height: 100%; }
+  #stickBase { display: none; position: absolute; width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.35); pointer-events: none; }
+  #stickKnob { position: absolute; left: 35px; top: 35px; width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,.5); }
+  .tbtn { position: absolute; border-radius: 50%; border: 2px solid rgba(255,255,255,.6); background: rgba(255,255,255,.18); color: #fff; font-size: 30px; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .tbtn:active { background: rgba(255,255,255,.4); }
+  #btnFire, #btnAim { left: var(--touch-x, 88%); top: var(--touch-y, 78%); transform: translate(-50%,-50%); touch-action: none; }
+  #btnFire { width: var(--fire-size, 112px); height: var(--fire-size, 112px); background: rgba(190,42,35,.5); border-color: rgba(255,185,175,.85); font-size: 40px; box-shadow: 0 0 20px #e33a2c55, inset 0 0 16px #ffb0a033; }
+  #btnAim { left: var(--aim-x, 72%); top: var(--aim-y, 76%); width: var(--aim-size, 82px); height: var(--aim-size, 82px); background: rgba(58,69,77,.72); font-size: 27px; }
+  #btnAim.aiming { background: rgba(230,185,78,.75); box-shadow: 0 0 18px #ffd16688; }
+  #btnBomb { width: 68px; height: 68px; left: 54px; bottom: calc(188px + var(--safe-b)); font-size: 26px; background: rgba(117,75,35,.65); }
+  #btnJump { width: 78px; height: 78px; right: calc(156px + var(--safe-r)); bottom: calc(34px + var(--safe-b)); }
+  #btnReload { width: 64px; height: 64px; right: calc(60px + var(--safe-r)); bottom: calc(156px + var(--safe-b)); font-size: 26px; }
+</style>
+</head>
+<body>
+
+<div id="game"></div>
+
+<div id="hud" class="hidden">
+  <div id="roomInfo"></div>
+  <button id="btnLeave">退出</button>
+  <div id="ammo"></div>
+  <div id="bombInfo"></div>
+  <div id="board"></div>
+  <div id="feed"></div>
+  <div id="cross"></div>
+  <div id="hitm"></div>
+  <div id="dmg"></div>
+  <div id="banner"></div>
+  <div id="deadmsg" class="hidden">撃破された…まもなく復活</div>
+</div>
+
+<div id="touch" class="hidden">
+  <div id="stickZone"></div>
+  <div id="lookZone"></div>
+  <div id="stickBase"><div id="stickKnob"></div></div>
+  <button class="tbtn" id="btnJump">⤒</button>
+  <button class="tbtn" id="btnReload">⟳</button>
+  <button class="tbtn" id="btnBomb" aria-label="爆弾を投げる">C4</button>
+  <button class="tbtn" id="btnAim" aria-label="照準を覗く">◎</button>
+  <button class="tbtn" id="btnFire" aria-label="射撃">🔫</button>
+</div>
+
+<div id="resume" class="hidden">クリックして操作を再開</div>
+
+<div id="menu">
+  <div class="card">
+    <h1>FPS ARENA</h1>
+    <p class="sub">飛び込み参加OKのデスマッチ(土台 v0.1)</p>
+    <div class="row"><label>名前</label><input type="text" id="nameInput" maxlength="12"></div>
+    <div class="row"><label>視点感度</label><input type="range" id="sensInput" min="0.3" max="2.5" step="0.05" value="1"></div>
+      <details class="controlSettings">
+        <summary>タッチボタンの配置・サイズ</summary>
+        <div class="row"><label>射撃ボタン 横</label><input type="range" id="fireXInput" min="5" max="95" step="1"><output id="fireXOut"></output></div>
+        <div class="row"><label>射撃ボタン 縦</label><input type="range" id="fireYInput" min="8" max="92" step="1"><output id="fireYOut"></output></div>
+        <div class="row"><label>射撃ボタン 大きさ</label><input type="range" id="fireSizeInput" min="68" max="160" step="2"><output id="fireSizeOut"></output></div>
+        <div class="row"><label>照準ボタン 横</label><input type="range" id="aimXInput" min="5" max="95" step="1"><output id="aimXOut"></output></div>
+        <div class="row"><label>照準ボタン 縦</label><input type="range" id="aimYInput" min="8" max="92" step="1"><output id="aimYOut"></output></div>
+        <div class="row"><label>照準ボタン 大きさ</label><input type="range" id="aimSizeInput" min="58" max="132" step="2"><output id="aimSizeOut"></output></div>
+      </details>
+      <button class="btn main" id="btnQuick">⚡ クイック参加(飛び込み)</button>
+    <div class="row" style="margin-top:14px">
+      <button class="btn sub2" id="btnCreate">部屋を作る</button>
+      <input type="text" id="codeInput" placeholder="部屋コード" maxlength="4" style="text-transform:uppercase">
+      <button class="btn sub2" id="btnJoin">参加</button>
+    </div>
+    <div id="status"></div>
+    <div class="help">
+      クイック参加: 誰かが開いている公開ルームに入ります。誰もいなければあなたが部屋を開き、後から来た人が飛び込めます。<br>
+      PC: WASD移動 / マウス視点 / クリック射撃 / スペースでジャンプ / Rでリロード<br>
+      タブレット: 左で移動、右側ドラッグで視点、🔫を押したままドラッグで射撃、◎は長押し照準。G/C4で爆弾
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+'use strict';
+
+/* =========================================================
+   設定(ここをいじればゲームバランスを調整できます)
+   ========================================================= */
+const CFG = {
+  maxPlayers: 8,
+  killLimit: 15,        // この撃破数に最初に到達した人の勝ち
+  hp: 100,
+  dmgBody: 18,
+  dmgHead: 36,
+  fireMs: 110,          // 連射間隔(ms)
+  mag: 30,
+  reloadMs: 1600,
+  spread: 0.012,
+  range: 120,
+  respawnMs: 3000,
+  winShowMs: 7000,      // 勝敗表示の時間(その後リセット)
+  speed: 6.5,
+  jump: 8,
+  gravity: 22,
+  eye: 1.6,
+  radius: 0.4,
+  sendHz: 20,
+  arenaHalf: 30,
+};
+const PUB_PREFIX  = 'fpsarena-x7q-pub-';   // クイック参加用の公開ルームID
+const ROOM_PREFIX = 'fpsarena-x7q-room-';   // コード指定の部屋ID
+const MAX_PUB = 5;                          // 公開ルームの数(満員なら次の番号へ)
+
+/* =========================================================
+   ユーティリティ
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+const cleanName = s => (String(s || '').replace(/[<>&"'`]/g, '').trim().slice(0, 12)) || 'Player';
+
+['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => document.addEventListener(ev, e => e.preventDefault()));
+document.addEventListener('dblclick', e => e.preventDefault());
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('touchmove', e => { if (running) e.preventDefault(); }, { passive: false });
+
+/* =========================================================
+   マップ(全員で同じ固定配置)
+   [cx, cz, 幅, 奥行, 高さ]
+   ========================================================= */
+const BOXES = [
+  [-14, -10, 4, 8, 2.5], [14, 10, 4, 8, 2.5], [-12, 14, 8, 3, 2], [12, -14, 8, 3, 2],
+  [0, -20, 10, 2, 3], [0, 20, 10, 2, 3], [-22, 0, 2, 10, 3], [22, 0, 2, 10, 3],
+  [-6, -8, 2, 2, 1.2], [6, 8, 2, 2, 1.2], [8, -6, 2, 2, 1.2], [-8, 6, 2, 2, 1.2],
+  [20, -22, 3, 3, 4], [-20, 22, 3, 3, 4],
+].map(([cx, cz, w, d, h]) => ({ cx, cz, w, d, h, y: 0, hw: w / 2, hd: d / 2 }));
+// 3階建ての開放型鉄骨タワー。床とステップは全員共通の衝突面。
+const TOWER = [
+  {cx:0,cz:0,w:10,d:10,h:.24,y:0},
+  {cx:0,cz:0,w:10,d:10,h:.24,y:3.05},
+  {cx:0,cz:0,w:10,d:10,h:.24,y:6.10},
+  ...[[-4.75,-4.75],[-4.75,4.75],[4.75,-4.75],[4.75,4.75]].map(([cx,cz])=>({cx,cz,w:.32,d:.32,h:6.4,y:0})),
+  ...Array.from({length:11},(_,i)=>({cx:-3.25,cz:7-i*.54,w:1.15,d:.62,h:.28,y:i*.28})),
+  ...Array.from({length:11},(_,i)=>({cx:3.25,cz:4.8-i*.54,w:1.15,d:.62,h:.28,y:3.25+i*.28})),
+];
+BOXES.push(...TOWER.map(b=>({...b,hw:b.w/2,hd:b.d/2,tower:true})));
+const A = CFG.arenaHalf;
+const WALLS = [
+  [0, -A - 0.5, A * 2 + 2, 1, 6], [0, A + 0.5, A * 2 + 2, 1, 6], [-A - 0.5, 0, 1, A * 2 + 2, 6], [A + 0.5, 0, 1, A * 2 + 2, 6],
+].map(([cx, cz, w, d, h]) => ({ cx, cz, w, d, h, hw: w / 2, hd: d / 2 }));
+const RAY_SOLIDS = BOXES.concat(WALLS);
+const SPAWNS = [[-26, -26], [26, 26], [-26, 26], [26, -26], [0, -26], [0, 26], [-26, 0], [26, 0]];
+
+/* =========================================================
+   three.js シーン
+   ========================================================= */
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.setSize(innerWidth, innerHeight);
+$('game').appendChild(renderer.domElement);
+const canvas = renderer.domElement;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x22282d);
+scene.fog = new THREE.Fog(0x22282d, 58, 125);
+const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.05, 220);
+camera.rotation.order = 'YXZ';
+scene.add(camera);
+scene.add(new THREE.HemisphereLight(0xb8c5ce, 0x252a2d, 0.72));
+const sun = new THREE.DirectionalLight(0xdce5ec, 0.9); sun.position.set(-18, 32, 12); scene.add(sun);
+
+(function buildWorld() {
+  const c = document.createElement('canvas'); c.width = c.height = 256;
+  const g = c.getContext('2d');
+  g.fillStyle = '#282d30'; g.fillRect(0, 0, 256, 256);
+  for (let y=0;y<256;y+=64) for (let x=0;x<256;x+=64) {
+    g.fillStyle = ((x+y)/64)%2 ? '#2d3235' : '#252a2d'; g.fillRect(x+1,y+1,62,62);
+    g.strokeStyle='#3c4245'; g.lineWidth=2; g.strokeRect(x+2,y+2,60,60);
+    g.fillStyle='#62696c'; [[7,7],[57,7],[7,57],[57,57]].forEach(([dx,dy])=>{g.beginPath();g.arc(x+dx,y+dy,1.7,0,Math.PI*2);g.fill();});
+  }
+  const tex = new THREE.CanvasTexture(c); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(8, 8);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(A*2,A*2), new THREE.MeshStandardMaterial({map:tex, color:0x858b8f, roughness:.96, metalness:.18}));
+  floor.rotation.x = -Math.PI/2; scene.add(floor);
+  const metal = new THREE.MeshStandardMaterial({color:0x4a5054, roughness:.78, metalness:.72});
+  const towerMat = new THREE.MeshStandardMaterial({color:0x62696c, roughness:.6, metalness:.82});
+  BOXES.forEach((b,i)=>{
+    const m=new THREE.Mesh(new THREE.BoxGeometry(b.w,b.h,b.d), b.tower?towerMat:metal);
+    m.position.set(b.cx,b.y+b.h/2,b.cz); scene.add(m);
+    if (!b.tower && b.h > 1.5) {
+      const band=new THREE.Mesh(new THREE.BoxGeometry(b.w+.025,.08,b.d+.025),new THREE.MeshStandardMaterial({color:0x353a3d,metalness:.68,roughness:.72}));
+      band.position.set(b.cx,b.y+b.h*.72,b.cz); scene.add(band);
+    }
+  });
+  WALLS.forEach(b=>{const m=new THREE.Mesh(new THREE.BoxGeometry(b.w,b.h,b.d),new THREE.MeshStandardMaterial({color:0x3a4044,metalness:.7,roughness:.8}));m.position.set(b.cx,b.h/2,b.cz);scene.add(m);});
+  // 工業灯の控えめなアンバー光
+  [[-12,0,-10],[12,0,10],[0,0,0]].forEach(([x,_,z])=>{const l=new THREE.PointLight(0xffb45b,1.4,13,2);l.position.set(x,5,z);scene.add(l);});
+})();
+
+// 一人称の銃(見た目だけ)
+const viewGun = new THREE.Group();
+(function () {
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.12, 0.55), new THREE.MeshLambertMaterial({ color: 0x2b2d36 }));
+  const barrel = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 0.3), new THREE.MeshLambertMaterial({ color: 0x15161b }));
+  barrel.position.set(0, 0.02, -0.4);
+  viewGun.add(body, barrel);
+  viewGun.position.set(0.24, -0.22, -0.5);
+  camera.add(viewGun);
+})();
+let recoil = 0;
+
+addEventListener('resize', () => {
+  renderer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+});
+
+/* =========================================================
+   ゲーム状態
+   ========================================================= */
+let running = false;
+const me = { x: 0, y: 0, z: 0, vy: 0, yaw: 0, pitch: 0, onGround: true, hp: CFG.hp, dead: false, k: 0, d: 0, bombs: 1,
+             ammo: CFG.mag, reloading: false, reloadEnd: 0, lastShot: 0, name: 'Player' };
+let sens = 1;
+let gameWin = null;           // 勝者名(試合終了中)
+let firing = false, aiming = false, jumpReq = false, reloadReq = false;
+const keys = {};
+const ents = new Map();       // 他プレイヤーの表示用 id -> {mesh,label,tx,ty,tz,tyaw,tpitch,alive,...}
+let boardData = [];
+
+const net = { peer: null, isHost: false, hostConn: null, conns: new Map(), myId: null, label: '' };
+let players = new Map();      // ★ホストだけが持つ「正」の状態
+let hostState = { win: null, winAt: 0, hueCounter: 0 };
+
+/* =========================================================
+   衝突判定・レイキャスト
+   ========================================================= */
+function blocked(x, z, feetY) {
+  const R = CFG.radius;
+  for (const b of BOXES) {
+    const bottom=b.y||0, top=bottom+b.h;
+    if (top > feetY + 0.35 && bottom < feetY + 1.72 && x > b.cx-b.hw-R && x < b.cx+b.hw+R && z > b.cz-b.hd-R && z < b.cz+b.hd+R) return true;
+  }
+  return false;
+}
+function groundAt(x, z, feetY=0) {
+  let g=0;
+  for (const b of BOXES) {
+    const top=(b.y||0)+b.h;
+    if (top <= feetY+0.34 && x>b.cx-b.hw-.2 && x<b.cx+b.hw+.2 && z>b.cz-b.hd-.2 && z<b.cz+b.hd+.2) g=Math.max(g,top);
+  }
+  return g;
+}
+function rayAABB(ox, oy, oz, dx, dy, dz, minx, miny, minz, maxx, maxy, maxz) {
+  let tmin = 0, tmax = Infinity;
+  const o = [ox, oy, oz], d = [dx, dy, dz], mn = [minx, miny, minz], mx = [maxx, maxy, maxz];
+  for (let i = 0; i < 3; i++) {
+    if (Math.abs(d[i]) < 1e-9) { if (o[i] < mn[i] || o[i] > mx[i]) return -1; }
+    else {
+      let t1 = (mn[i] - o[i]) / d[i], t2 = (mx[i] - o[i]) / d[i];
+      if (t1 > t2) { const s = t1; t1 = t2; t2 = s; }
+      if (t1 > tmin) tmin = t1;
+      if (t2 < tmax) tmax = t2;
+      if (tmin > tmax) return -1;
+    }
+  }
+  return tmin;
+}
+
+/* =========================================================
+   音(簡易)
+   ========================================================= */
+let actx = null;
+function initAudio() {
+  if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { actx = null; } }
+  if (actx && actx.state === 'suspended') actx.resume();
+}
+function sfx(type, vol = 1) {
+  if (!actx || vol <= 0.01) return;
+  if (type === 'shot') {
+    const len = Math.floor(actx.sampleRate * 0.09);
+    const buf = actx.createBuffer(1, len, actx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
+    const s = actx.createBufferSource(); s.buffer = buf;
+    const g = actx.createGain(); g.gain.value = 0.3 * vol;
+    s.connect(g); g.connect(actx.destination); s.start();
+  } else {
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'square'; o.frequency.value = type === 'kill' ? 880 : 1300;
+    g.gain.setValueAtTime(0.12 * vol, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.12);
+    o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + 0.13);
+  }
+}
+
+/* =========================================================
+   他プレイヤーの見た目
+   ========================================================= */
+function makeLabel(name) {
+  const c = document.createElement('canvas'); c.width = 256; c.height = 64;
+  const g = c.getContext('2d');
+  g.font = 'bold 34px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.lineWidth = 6; g.strokeStyle = 'rgba(0,0,0,.75)'; g.strokeText(name, 128, 32);
+  g.fillStyle = '#fff'; g.fillText(name, 128, 32);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true }));
+  sp.scale.set(2, 0.5, 1); sp.position.y = 2.3;
+  return sp;
+}
+function makePlayerMesh(hue, name) {
+  const g = new THREE.Group();
+  const col = new THREE.Color().setHSL(hue, 0.28, 0.42);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.95, 0.4), new THREE.MeshLambertMaterial({ color: col })); body.position.y = 1.0;
+  const legs = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.3), new THREE.MeshLambertMaterial({ color: 0x292d30 })); legs.position.y = 0.28;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.34, 0.34), new THREE.MeshLambertMaterial({ color: 0x88847e })); head.position.y = 1.65;
+  const gun = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.12, 0.6), new THREE.MeshLambertMaterial({ color: 0x17191b })); gun.position.set(0.32, 1.1, -0.35);
+  g.add(body, legs, head, gun, makeLabel(name));
+  g.userData.head = head; g.userData.damageMeshes=[body,legs,head]; g.userData.damageBase=[body.material.color.clone(),legs.material.color.clone(),head.material.color.clone()];
+  return g;
+}
+function ensureEnt(id, name, hue) {
+  let e = ents.get(id);
+  if (!e) {
+    const mesh = makePlayerMesh(hue, name);
+    scene.add(mesh);
+    e = { id, mesh, tx: 0, ty: 0, tz: 0, tyaw: 0, tpitch: 0, alive: false, fresh: true, name, deadUntil: 0, hitUntil: 0 };
+    ents.set(id, e);
+  }
+  return e;
+}
+function removeEnt(id) {
+  const e = ents.get(id); if (!e) return;
+  scene.remove(e.mesh);
+  e.mesh.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
+  ents.delete(id);
+}
+function clearEnts() { for (const id of Array.from(ents.keys())) removeEnt(id); }
+
+/* =========================================================
+   弾道エフェクト
+   ========================================================= */
+const tracers = [];
+function spawnTracer(ax, ay, az, bx, by, bz) {
+  const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(ax, ay, az), new THREE.Vector3(bx, by, bz)]);
+  const mat = new THREE.LineBasicMaterial({ color: 0xffe08a, transparent: true, opacity: 1 });
+  const line = new THREE.Line(geo, mat); scene.add(line);
+  tracers.push({ line, life: 0.09 });
+}
+function updateTracers(dt) {
+  for (let i = tracers.length - 1; i >= 0; i--) {
+    const t = tracers[i]; t.life -= dt; t.line.material.opacity = Math.max(0, t.life / 0.09);
+    if (t.life <= 0) { scene.remove(t.line); t.line.geometry.dispose(); t.line.material.dispose(); tracers.splice(i, 1); }
+  }
+}
+function clearTracers() { tracers.forEach(t => { scene.remove(t.line); t.line.geometry.dispose(); t.line.material.dispose(); }); tracers.length = 0; }
+
+/* =========================================================
+   ネットワーク: 共通
+   ========================================================= */
+function sendToHost(msg) {
+  if (net.isHost) handleHostMsg('H', msg);
+  else if (net.hostConn && net.hostConn.open) net.hostConn.send(msg);
+}
+function hostEmit(msg, to) {            // ホスト専用: 全員 or 指定1人に送る(ホスト自身にも反映)
+  if (to === undefined) {
+    for (const c of net.conns.values()) if (c.open) c.send(msg);
+    onNetMsg(msg);
+  } else if (to === 'H') onNetMsg(msg);
+  else { const c = net.conns.get(to); if (c && c.open) c.send(msg); }
+}
+function hostBroadcastExcept(msg, exceptId) {
+  for (const [id, c] of net.conns) if (id !== exceptId && c.open) c.send(msg);
+}
+
+// クライアント側(ホスト自身も同じ関数で受け取る)
+function onNetMsg(m) {
+  if (!m) return;
+  switch (m.t) {
+    case 'snap': applySnap(m); break;
+    case 'shot': drawRemoteShot(m); break;
+    case 'hitfx': { const e=ents.get(m.id); if(e) e.hitUntil=performance.now()+260; break; }
+    case 'boom': spawnExplosion(m.x,m.y,m.z); break;
+    case 'kill': addFeed(`${m.k} ▶ ${m.v}`); if (m.kid === net.myId) sfx('kill'); break;
+    case 'msg': addFeed(m.text); break;
+    case 'respawn': onRespawn(m); break;
+  }
+}
+
+function onRespawn(m) {
+  me.x = m.x; me.y = m.y || 0; me.z = m.z; me.vy = 0; me.yaw = m.yaw; me.pitch = 0; me.onGround = true;
+  me.ammo = CFG.mag; me.bombs = 1; me.reloading = false; me.dead = false; me.hp = CFG.hp;
+  $('deadmsg').classList.add('hidden');
+}
+
+function applySnap(s) {
+  gameWin = s.win || null;
+  const seen = new Set();
+  boardData = [];
+  for (const a of s.ps) {
+    const [id, name, x, y, z, yaw, pitch, hp, alive, k, d, hue, bombs] = a;
+    seen.add(id);
+    boardData.push({ id, name, k, d });
+    if (id === net.myId) {
+      if (alive && hp < me.hp) flashDamage();
+      me.hp = hp; me.k = k; me.d = d; me.bombs = bombs || 0;
+      if (!alive && !me.dead) { me.dead = true; firing = false; $('deadmsg').classList.remove('hidden'); }
+      else if (alive && me.dead) { me.dead = false; $('deadmsg').classList.add('hidden'); }
+    } else {
+      const e = ensureEnt(id, name, hue);
+      const wasAlive=e.alive, nextAlive=!!alive;
+      if (wasAlive && !nextAlive) { e.deadUntil=performance.now()+8500; createCorpse(e); }
+      if (!wasAlive && nextAlive && !e.fresh) { e.mesh.position.set(x,y,z); e.mesh.rotation.set(0,yaw,0); }
+      e.tx = x; e.ty = y; e.tz = z; e.tyaw = yaw; e.tpitch = pitch; e.alive = nextAlive;
+      if (e.fresh) { e.mesh.position.set(x, y, z); e.mesh.rotation.y = yaw; e.fresh = false; }
+    }
+  }
+  for (const id of Array.from(ents.keys())) if (!seen.has(id)) removeEnt(id);
+}
+
+function drawRemoteShot(m) {
+  const o = m.o, e = m.e;
+  spawnTracer(o[0], o[1] - 0.3, o[2], e[0], e[1], e[2]);
+  const dist = Math.hypot(o[0] - me.x, o[2] - me.z);
+  sfx('shot', clamp(1 - dist / 45, 0, 0.7));
+}
+
+/* =========================================================
+   ネットワーク: ホスト側の処理(ここが対戦ルールの本体)
+   ========================================================= */
+function pickSpawn() {
+  let best = SPAWNS[0], bestD = -1;
+  const shuffled = SPAWNS.slice().sort(() => Math.random() - 0.5);
+  for (const s of shuffled) {
+    let md = 1e9;
+    for (const p of players.values()) if (p.alive) md = Math.min(md, Math.hypot(p.x - s[0], p.z - s[1]));
+    if (md > bestD) { bestD = md; best = s; }
+  }
+  return best;
+}
+function spawnPlayer(p) {
+  const [sx, sz] = pickSpawn();
+  p.x = sx; p.y = 0; p.z = sz; p.alive = true; p.hp = CFG.hp; p.bombs=1;
+  hostEmit({ t: 'respawn', x: sx, y: 0, z: sz, yaw: Math.atan2(sx, sz) }, p.id);
+}
+function hostDamage(v,p,amount,head=false) {
+  if(!v || !p || !v.alive || v===p) return;
+  v.hp-=amount;
+  if(v.hp<=0){v.hp=0;v.alive=false;v.d++;p.k++;v.respawnAt=performance.now()+CFG.respawnMs;
+    hostEmit({t:'kill',k:p.name,v:v.name,kid:p.id,vid:v.id,head:!!head});
+    if(p.k>=CFG.killLimit){hostState.win=p.name;hostState.winAt=performance.now()+CFG.winShowMs;}}
+}
+function addPlayer(id, name) {
+  const p = { id, name: cleanName(name), x: 0, y: 0, z: 0, yaw: 0, pitch: 0, hp: CFG.hp, alive: false, k: 0, d: 0,
+              hue: (hostState.hueCounter++ * 0.173) % 1, respawnAt: 0 };
+  players.set(id, p);
+  spawnPlayer(p);
+  if (id !== 'H') hostEmit({ t: 'msg', text: `${p.name} が参加` });
+  return p;
+}
+function removePlayer(id) {
+  const p = players.get(id); if (!p) return;
+  players.delete(id); net.conns.delete(id);
+  hostEmit({ t: 'msg', text: `${p.name} が退出` });
+}
+
+function handleHostMsg(from, m) {
+  const p = players.get(from); if (!p || !m) return;
+  switch (m.t) {
+    case 'st':
+      if (p.alive && [m.x, m.y, m.z, m.yaw, m.pitch].every(Number.isFinite)) {
+        p.x = clamp(m.x, -A, A); p.y = clamp(m.y, 0, 10); p.z = clamp(m.z, -A, A); p.yaw = m.yaw; p.pitch = m.pitch;
+      }
+      break;
+    case 'shot': {
+      if (!p.alive || !Array.isArray(m.o) || !Array.isArray(m.e)) break;
+      const sm = { t: 'shot', id: from, o: m.o, e: m.e };
+      if (from !== 'H') onNetMsg(sm);
+      hostBroadcastExcept(sm, from);
+      break;
+    }
+    case 'hit': {
+      const v = players.get(m.id);
+      if (!v || v === p || !p.alive || !v.alive || hostState.win) break;
+      hostEmit({t:'hitfx',id:v.id}); hostDamage(v,p,m.head?CFG.dmgHead:CFG.dmgBody,!!m.head);
+      break;
+    }
+    case 'bomb': {
+      if(!p.alive || p.bombs<1 || hostState.win || ![m.x,m.y,m.z].every(Number.isFinite)) break;
+      p.bombs--;
+      let dx=m.x-p.x,dy=m.y-(p.y+CFG.eye),dz=m.z-p.z,dist=Math.hypot(dx,dy,dz);
+      const scale=dist>12?12/dist:1, bx=p.x+dx*scale, by=clamp(p.y+CFG.eye+dy*scale,0,8), bz=p.z+dz*scale;
+      hostEmit({t:'boom',x:bx,y:by,z:bz});
+      for(const v of players.values()) if(v.alive && v!==p) { const d=Math.hypot(v.x-bx,v.y+1-by,v.z-bz); if(d<5.5) hostDamage(v,p,Math.ceil(90*(1-d/6.5)),false); }
+      break;
+    }
+  }
+}
+
+function hostTick() {
+  const now = performance.now();
+  if (hostState.win && now >= hostState.winAt) {          // 試合リセット
+    hostState.win = null;
+    for (const p of players.values()) { p.k = 0; p.d = 0; spawnPlayer(p); }
+  } else if (!hostState.win) {
+    for (const p of players.values()) if (!p.alive && now >= p.respawnAt) spawnPlayer(p);
+  }
+  const snap = { t: 'snap', win: hostState.win, ps: [] };
+  for (const p of players.values()) snap.ps.push([p.id, p.name, p.x, p.y, p.z, p.yaw, p.pitch, p.hp, p.alive ? 1 : 0, p.k, p.d, p.hue, p.bombs]);
+  hostEmit(snap);
+}
+
+function hostSetup(peer) {
+  peer.on('connection', conn => {
+    conn.on('data', m => {
+      if (m && m.t === 'join' && !players.has(conn.peer)) {
+        if (players.size >= CFG.maxPlayers) { conn.send({ t: 'full' }); setTimeout(() => conn.close(), 500); return; }
+        net.conns.set(conn.peer, conn);
+        conn.send({ t: 'welcome', id: conn.peer });       // ← 先にwelcome。その後にリスポーン等が届く
+        addPlayer(conn.peer, m.name);
+      } else if (players.has(conn.peer)) handleHostMsg(conn.peer, m);
+    });
+    conn.on('close', () => removePlayer(conn.peer));
+    conn.on('error', () => removePlayer(conn.peer));
+  });
+  peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
+  peer.on('error', e => console.warn('peer error', e));
+}
+
+/* =========================================================
+   接続・マッチング
+   ========================================================= */
+function setStatus(t) { $('status').textContent = t || ''; }
+function setBusy(b) { ['btnQuick', 'btnCreate', 'btnJoin'].forEach(id => $(id).disabled = b); }
+
+function newPeer(id) {
+  return new Promise((res, rej) => {
+    if (typeof Peer === 'undefined') return rej({ type: 'nolib' });
+    let settled = false;
+    const p = id ? new Peer(id, { debug: 0 }) : new Peer({ debug: 0 });
+    const to = setTimeout(() => { if (settled) return; settled = true; try { p.destroy(); } catch (e) {} rej({ type: 'timeout' }); }, 10000);
+    p.on('open', () => { if (settled) return; settled = true; clearTimeout(to); res(p); });
+    p.on('error', e => { if (settled) return; settled = true; clearTimeout(to); try { p.destroy(); } catch (x) {} rej(e); });
+  });
+}
+
+// ホストに接続して welcome を受け取るまで待つ。reject: 'none' | 'full' | 'timeout' | 'closed' | 'error'
+function joinRoom(hostId, peer, name) {
+  return new Promise((res, rej) => {
+    let done = false, joined = false;
+    const conn = peer.connect(hostId, { reliable: true, serialization: 'json' });
+    const to = setTimeout(() => fail('timeout'), 8000);
+    function fail(r) { if (done) return; done = true; clearTimeout(to); peer.off('error', onPeerErr); try { conn.close(); } catch (e) {} rej(r); }
+    function onPeerErr(e) { if (e && e.type === 'peer-unavailable') fail('none'); }
+    peer.on('error', onPeerErr);
+    conn.on('open', () => conn.send({ t: 'join', name }));
+    conn.on('data', m => {
+      if (joined) { onNetMsg(m); return; }
+      if (done) return;
+      if (m && m.t === 'welcome') { done = true; joined = true; clearTimeout(to); peer.off('error', onPeerErr); res(conn); }
+      else if (m && m.t === 'full') fail('full');
+    });
+    conn.on('close', () => { if (joined) leaveGame('ホストとの接続が切れました'); else fail('closed'); });
+    conn.on('error', () => { if (joined) leaveGame('接続エラーが発生しました'); else fail('error'); });
+  });
+}
+
+function startAsHost(peer, label) {
+  net.peer = peer; net.isHost = true; net.myId = 'H'; net.label = label;
+  players = new Map(); hostState = { win: null, winAt: 0, hueCounter: 0 };
+  hostSetup(peer);
+  beginGame();
+  addPlayer('H', me.name);
+}
+function startAsClient(peer, conn, label) {
+  net.peer = peer; net.isHost = false; net.hostConn = conn; net.myId = peer.id; net.label = label;
+  peer.on('disconnected', () => { try { peer.reconnect(); } catch (e) {} });
+  peer.on('error', e => { if (e && e.type !== 'peer-unavailable') console.warn('peer error', e); });
+  beginGame();
+}
+
+async function quickMatch() {
+  setBusy(true); setStatus('部屋を探しています…');
+  let peer;
+  try { peer = await newPeer(); } catch (e) { setBusy(false); return setStatus('接続サーバーに繋がりません。時間をおいて再度お試しください'); }
+  let raceRetry = 0;
+  for (let n = 1; n <= MAX_PUB; n++) {
+    const hid = PUB_PREFIX + n;
+    setStatus(`公開ルーム #${n} を確認中…`);
+    try {
+      const conn = await joinRoom(hid, peer, me.name);
+      return startAsClient(peer, conn, `公開ルーム #${n}`);
+    } catch (r) {
+      if (r === 'none') {                                   // 誰もいない → 自分が部屋を開く
+        try { peer.destroy(); } catch (e) {}
+        try {
+          const hp = await newPeer(hid);
+          return startAsHost(hp, `公開ルーム #${n}`);
+        } catch (e) {
+          if (e && e.type === 'unavailable-id' && raceRetry++ < 3) {   // 同時に開いた人がいた → もう一度参加を試す
+            try { peer = await newPeer(); } catch (x) { setBusy(false); return setStatus('接続サーバーに繋がりません'); }
+            n--; continue;
+          }
+          setBusy(false); return setStatus('部屋を開けませんでした');
+        }
+      }
+      // full / timeout / closed / error → 次の番号へ
+    }
+  }
+  try { peer.destroy(); } catch (e) {}
+  setBusy(false); setStatus('空いている部屋がありませんでした。もう一度お試しください');
+}
+
+const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+async function createRoom() {
+  setBusy(true); setStatus('部屋を作成中…');
+  for (let i = 0; i < 5; i++) {
+    let code = ''; for (let k = 0; k < 4; k++) code += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)];
+    try {
+      const peer = await newPeer(ROOM_PREFIX + code);
+      return startAsHost(peer, `部屋コード: ${code}`);
+    } catch (e) {
+      if (e && e.type === 'unavailable-id') continue;
+      setBusy(false); return setStatus('接続サーバーに繋がりません。時間をおいて再度お試しください');
+    }
+  }
+  setBusy(false); setStatus('部屋を作れませんでした');
+}
+async function joinByCode() {
+  const code = $('codeInput').value.trim().toUpperCase();
+  if (code.length !== 4) return setStatus('4文字の部屋コードを入力してください');
+  setBusy(true); setStatus('接続中…');
+  let peer;
+  try { peer = await newPeer(); } catch (e) { setBusy(false); return setStatus('接続サーバーに繋がりません'); }
+  try {
+    const conn = await joinRoom(ROOM_PREFIX + code, peer, me.name);
+    startAsClient(peer, conn, `部屋コード: ${code}`);
+  } catch (r) {
+    try { peer.destroy(); } catch (e) {}
+    setBusy(false);
+    setStatus(r === 'none' ? '部屋が見つかりません' : r === 'full' ? '満員です' : '接続できませんでした');
+  }
+}
+
+/* =========================================================
+   ゲーム開始・終了
+   ========================================================= */
+function beginGame() {
+  me.x = SPAWNS[0][0]; me.z = SPAWNS[0][1]; me.y = 0; me.vy = 0; me.yaw = Math.atan2(me.x, me.z); me.pitch = 0;
+  me.hp = CFG.hp; me.dead = false; me.k = 0; me.d = 0; me.bombs = 1; me.ammo = CFG.mag; me.reloading = false;
+  gameWin = null; firing = false; boardData = [];
+  $('feed').innerHTML = ''; $('banner').textContent = ''; $('deadmsg').classList.add('hidden');
+  $('roomInfo').textContent = net.label + (net.isHost ? '(あなたがホスト)' : '');
+  $('menu').classList.add('hidden'); $('hud').classList.remove('hidden');
+  if (isTouch) $('touch').classList.remove('hidden'); else { canvas.requestPointerLock && canvas.requestPointerLock(); }
+  running = true;
+  setBusy(false); setStatus('');
+}
+
+function leaveGame(msg) {
+  running = false; firing = false;
+  try { if (document.pointerLockElement) document.exitPointerLock(); } catch (e) {}
+  try { if (net.hostConn) net.hostConn.close(); } catch (e) {}
+  for (const c of net.conns.values()) { try { c.close(); } catch (e) {} }
+  try { if (net.peer) net.peer.destroy(); } catch (e) {}
+  net.peer = null; net.hostConn = null; net.conns = new Map(); net.isHost = false; net.myId = null;
+  players = new Map(); clearEnts(); clearTracers();
+  $('hud').classList.add('hidden'); $('touch').classList.add('hidden'); $('resume').classList.add('hidden');
+  $('menu').classList.remove('hidden');
+  setBusy(false); setStatus(msg || '');
+}
+
+/* =========================================================
+   入力
+   ========================================================= */
+addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (!running) return;
+  if (e.code === 'Space') { jumpReq = true; e.preventDefault(); }
+  if (e.code === 'KeyR') reloadReq = true;
+  if (e.code === 'KeyG') throwBomb();
+});
+addEventListener('keyup', e => { keys[e.code] = false; if (e.code === 'Space') jumpReq = false; });
+
+function lookBy(dx, dy) {
+  me.yaw -= dx * 0.0045 * sens;
+  me.pitch = clamp(me.pitch - dy * 0.0045 * sens, -1.5, 1.5);
+}
+// PC: マウス
+document.addEventListener('mousemove', e => {
+  if (!running || document.pointerLockElement !== canvas) return;
+  me.yaw -= e.movementX * 0.0022 * sens;
+  me.pitch = clamp(me.pitch - e.movementY * 0.0022 * sens, -1.5, 1.5);
+});
+document.addEventListener('mousedown', e => { if (running && document.pointerLockElement === canvas && e.button === 0) firing = true; if(running && document.pointerLockElement===canvas && e.button===2) aiming=true; });
+document.addEventListener('mouseup', e => { if (e.button === 0) firing = false; if(e.button===2) aiming=false; });
+document.addEventListener('pointerlockchange', () => {
+  const locked = document.pointerLockElement === canvas;
+  $('resume').classList.toggle('hidden', !(running && !isTouch && !locked));
+  if (!locked) { firing = false; aiming = false; }
+});
+$('resume').addEventListener('click', () => { initAudio(); canvas.requestPointerLock(); });
+
+// タッチ: 左=移動スティック(浮動)、右=視点ドラッグ
+const joy = { x: 0, y: 0 };
+let stickId = null, sOrigin = { x: 0, y: 0 };
+const sz = $('stickZone'), sBase = $('stickBase'), sKnob = $('stickKnob');
+sz.addEventListener('pointerdown', e => {
+  if (stickId !== null) return;
+  stickId = e.pointerId; sz.setPointerCapture(e.pointerId); sOrigin = { x: e.clientX, y: e.clientY };
+  sBase.style.display = 'block'; sBase.style.left = (e.clientX - 60) + 'px'; sBase.style.top = (e.clientY - 60) + 'px';
+  sKnob.style.transform = 'translate(0,0)';
+});
+sz.addEventListener('pointermove', e => {
+  if (e.pointerId !== stickId) return;
+  let dx = e.clientX - sOrigin.x, dy = e.clientY - sOrigin.y; const r = 60, l = Math.hypot(dx, dy);
+  if (l > r) { dx = dx / l * r; dy = dy / l * r; }
+  joy.x = dx / r; joy.y = dy / r;
+  sKnob.style.transform = `translate(${dx}px,${dy}px)`;
+});
+const endStick = e => { if (e.pointerId !== stickId) return; stickId = null; joy.x = joy.y = 0; sBase.style.display = 'none'; };
+sz.addEventListener('pointerup', endStick); sz.addEventListener('pointercancel', endStick);
+
+let lookId = null, lpx = 0, lpy = 0;
+const lz = $('lookZone');
+lz.addEventListener('pointerdown', e => { if (lookId !== null) return; lookId = e.pointerId; lz.setPointerCapture(e.pointerId); lpx = e.clientX; lpy = e.clientY; });
+lz.addEventListener('pointermove', e => { if (e.pointerId !== lookId) return; lookBy(e.clientX - lpx, e.clientY - lpy); lpx = e.clientX; lpy = e.clientY; });
+const endLook = e => { if (e.pointerId === lookId) lookId = null; };
+lz.addEventListener('pointerup', endLook); lz.addEventListener('pointercancel', endLook);
+
+// 射撃ボタン(押したままドラッグで視点も動かせる)
+let fireId = null, fpx = 0, fpy = 0;
+const bf = $('btnFire');
+bf.addEventListener('pointerdown', e => { if (fireId !== null) return; fireId = e.pointerId; bf.setPointerCapture(e.pointerId); fpx = e.clientX; fpy = e.clientY; firing = true; });
+bf.addEventListener('pointermove', e => { if (e.pointerId !== fireId) return; lookBy(e.clientX - fpx, e.clientY - fpy); fpx = e.clientX; fpy = e.clientY; });
+const endFire = e => { if (e.pointerId !== fireId) return; fireId = null; firing = false; };
+bf.addEventListener('pointerup', endFire); bf.addEventListener('pointercancel', endFire);
+$('btnJump').addEventListener('pointerdown', () => { jumpReq = true; });
+$('btnJump').addEventListener('pointerup', () => { jumpReq = false; });
+$('btnJump').addEventListener('pointercancel', () => { jumpReq = false; });
+$('btnReload').addEventListener('pointerdown', () => { reloadReq = true; });
+$('btnBomb').addEventListener('pointerdown', e => {e.preventDefault(); throwBomb();});
+const ba=$('btnAim');
+ba.addEventListener('pointerdown',e=>{e.preventDefault();aiming=true;ba.classList.add('aiming');ba.setPointerCapture(e.pointerId);});
+const endAim=()=>{aiming=false;ba.classList.remove('aiming');};
+ba.addEventListener('pointerup',endAim); ba.addEventListener('pointercancel',endAim); ba.addEventListener('lostpointercapture',endAim);
+
+/* =========================================================
+   射撃・爆発エフェクト
+   ========================================================= */
+const muzzleGlow=new THREE.Mesh(new THREE.IcosahedronGeometry(.1,1),new THREE.MeshBasicMaterial({color:0xffb34d}));
+muzzleGlow.position.set(0,.005,-.72); muzzleGlow.visible=false; viewGun.add(muzzleGlow);
+const muzzleLight=new THREE.PointLight(0xff7a27,0,4,2); muzzleLight.position.copy(muzzleGlow.position); viewGun.add(muzzleLight);
+let muzzleTimer=0;
+function triggerMuzzleFlash(){muzzleTimer=.065;muzzleGlow.visible=true;muzzleGlow.scale.set(1+Math.random()*1.4,.8+Math.random(),1.8+Math.random()*2);muzzleLight.intensity=4.2;}
+const sparks=[];
+function spawnImpact(x,y,z,color=0xffb34d){
+  for(let i=0;i<5;i++){const mesh=new THREE.Mesh(new THREE.IcosahedronGeometry(.035+Math.random()*.025,0),new THREE.MeshBasicMaterial({color,transparent:true}));mesh.position.set(x,y,z);scene.add(mesh);sparks.push({mesh,v:new THREE.Vector3((Math.random()-.5)*5,Math.random()*4,(Math.random()-.5)*5),life:.22+Math.random()*.2});}
+}
+const explosions=[];
+function spawnExplosion(x,y,z){
+  const mesh=new THREE.Mesh(new THREE.SphereGeometry(.7,12,10),new THREE.MeshBasicMaterial({color:0xff4a1c,transparent:true,opacity:.9,depthWrite:false}));mesh.position.set(x,y,z);scene.add(mesh);
+  const light=new THREE.PointLight(0xff4b1c,6,18,2);light.position.set(x,y,z);scene.add(light); explosions.push({mesh,light,life:.55,max:.55}); shakeTimer=.32;
+  for(let i=0;i<24;i++) spawnImpact(x+(Math.random()-.5)*1.4,y+(Math.random()-.5)*1.4,z+(Math.random()-.5)*1.4,Math.random()<.5?0xff542b:0xffd07a);
+}
+function updateCombatFx(dt){
+  if(muzzleTimer>0){muzzleTimer-=dt;if(muzzleTimer<=0){muzzleGlow.visible=false;muzzleLight.intensity=0;}}
+  for(let i=sparks.length-1;i>=0;i--){const s=sparks[i];s.life-=dt;s.v.y-=8*dt;s.mesh.position.addScaledVector(s.v,dt);s.mesh.material.opacity=Math.max(0,s.life/.4);if(s.life<=0){scene.remove(s.mesh);s.mesh.geometry.dispose();s.mesh.material.dispose();sparks.splice(i,1);}}
+  for(let i=explosions.length-1;i>=0;i--){const e=explosions[i];e.life-=dt;const p=1-e.life/e.max;e.mesh.scale.setScalar(1+p*7);e.mesh.material.opacity=Math.max(0,e.life/e.max);e.light.intensity=6*(e.life/e.max);if(e.life<=0){scene.remove(e.mesh,e.light);e.mesh.geometry.dispose();e.mesh.material.dispose();explosions.splice(i,1);}}
+}
+function throwBomb(){
+  if(!running||me.dead||gameWin||me.bombs<1)return;
+  camera.updateMatrixWorld(true);const dir=new THREE.Vector3();camera.getWorldDirection(dir);
+  const pos=new THREE.Vector3(me.x,me.y+CFG.eye,me.z).addScaledVector(dir,8);
+  sendToHost({t:'bomb',x:pos.x,y:pos.y,z:pos.z}); me.bombs=Math.max(0,me.bombs-1);
+  sfx('kill',.45);
+}
+
+/* =========================================================
+   自キャラの更新・射撃
+   ========================================================= */
+function startReload() {
+  if (me.reloading || me.ammo >= CFG.mag) return;
+  me.reloading = true; me.reloadEnd = performance.now() + CFG.reloadMs;
+}
+
+function fire() {
+  camera.updateMatrixWorld(true);
+  const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
+  const spread=aiming?CFG.spread*.42:CFG.spread;
+  dir.x += (Math.random() - 0.5) * spread; dir.y += (Math.random() - 0.5) * spread; dir.z += (Math.random() - 0.5) * spread;
+  dir.normalize();
+  const ox = camera.position.x, oy = camera.position.y, oz = camera.position.z;
+  let tWall = CFG.range;
+  for (const s of RAY_SOLIDS) {
+    const t = rayAABB(ox, oy, oz, dir.x, dir.y, dir.z, s.cx-s.hw, s.y||0, s.cz-s.hd, s.cx+s.hw, (s.y||0)+s.h, s.cz+s.hd);
+    if (t >= 0 && t < tWall) tWall = t;
+  }
+  let best = null, tP = tWall;
+  for (const e of ents.values()) {
+    if (!e.alive) continue;
+    const p = e.mesh.position;
+    const t = rayAABB(ox, oy, oz, dir.x, dir.y, dir.z, p.x - 0.4, p.y, p.z - 0.4, p.x + 0.4, p.y + 1.8, p.z + 0.4);
+    if (t >= 0 && t < tP) { tP = t; best = e; }
+  }
+  const ex = ox + dir.x * tP, ey = oy + dir.y * tP, ez = oz + dir.z * tP;
+  if (best) {
+    const head = ey > best.mesh.position.y + 1.45;
+    sendToHost({ t: 'hit', id: best.id, head });
+    showHitMarker(head); sfx('hit');
+  }
+  const mz = new THREE.Vector3(0.25, -0.2, -0.7).applyMatrix4(camera.matrixWorld);
+  spawnTracer(mz.x, mz.y, mz.z, ex, ey, ez);
+  spawnImpact(ex,ey,ez,best?0xe4493c:0xffbd63); triggerMuzzleFlash(); shakeTimer=.12;
+  sendToHost({ t: 'shot', o: [ox, oy, oz], e: [ex, ey, ez] });
+  sfx('shot', 1.25);
+  me.ammo--; me.lastShot = performance.now(); recoil = 1;
+}
+
+function updateMe(dt) {
+  const now = performance.now();
+  if (me.dead) { camera.position.set(me.x, me.y + 0.5, me.z); camera.rotation.set(me.pitch, me.yaw, 0); return; }
+
+  let ix = 0, iz = 0;
+  if (keys.KeyW || keys.ArrowUp) iz += 1;
+  if (keys.KeyS || keys.ArrowDown) iz -= 1;
+  if (keys.KeyD || keys.ArrowRight) ix += 1;
+  if (keys.KeyA || keys.ArrowLeft) ix -= 1;
+  if (Math.hypot(joy.x, joy.y) > 0.12) { ix += joy.x; iz += -joy.y; }
+  const len = Math.hypot(ix, iz); if (len > 1) { ix /= len; iz /= len; }
+  const sy = Math.sin(me.yaw), cy = Math.cos(me.yaw);
+  const vx = (-sy * iz + cy * ix) * CFG.speed, vz = (-cy * iz - sy * ix) * CFG.speed;
+  const nx = me.x + vx * dt; if (!blocked(nx, me.z, me.y)) me.x = nx;
+  const nz = me.z + vz * dt; if (!blocked(me.x, nz, me.y)) me.z = nz;
+  me.x = clamp(me.x, -A + 0.5, A - 0.5); me.z = clamp(me.z, -A + 0.5, A - 0.5);
+
+  const g = groundAt(me.x, me.z, me.y);
+  if (jumpReq && me.onGround) { me.vy = CFG.jump; me.onGround = false; }
+  me.vy -= CFG.gravity * dt; me.y += me.vy * dt;
+  if (me.y <= g) { me.y = g; me.vy = 0; me.onGround = true; } else if (me.y > g + 0.01) me.onGround = false;
+
+  camera.position.set(me.x, me.y + CFG.eye, me.z);
+  camera.rotation.set(me.pitch, me.yaw, 0);
+  const fov=aiming?49:75; if(camera.fov!==fov){camera.fov=fov;camera.updateProjectionMatrix();}
+  if(shakeTimer>0){shakeTimer=Math.max(0,shakeTimer-dt);camera.rotation.x+= (Math.random()-.5)*.055;camera.rotation.y+=(Math.random()-.5)*.04;}
+  viewGun.position.x=aiming?.10:.24; viewGun.position.y=aiming?-.18:-.22;
+  viewGun.position.z = (aiming?-.40:-.5) + recoil * .09; viewGun.rotation.x=recoil*.12;
+
+  if (me.reloading && now >= me.reloadEnd) { me.reloading = false; me.ammo = CFG.mag; }
+  if (reloadReq) { reloadReq = false; startReload(); }
+  if (firing && !gameWin && now - me.lastShot >= CFG.fireMs && !me.reloading) {
+    if (me.ammo > 0) fire(); else startReload();
+  }
+  recoil = Math.max(0, recoil - dt * 6);
+}
+
+/* =========================================================
+   毎フレーム処理
+   ========================================================= */
+let sendAcc = 0, boardAcc = 0;
+function netUpdate(dt) {
+  sendAcc += dt;
+  if (sendAcc < 1 / CFG.sendHz) return;
+  sendAcc = 0;
+  if (!me.dead) sendToHost({ t: 'st', x: me.x, y: me.y, z: me.z, yaw: me.yaw, pitch: me.pitch });
+  if (net.isHost) hostTick();
+}
+
+function updateEnts(dt) {
+  const k = 1 - Math.exp(-dt * 14), now=performance.now();
+  for (const e of ents.values()) {
+    e.mesh.visible = e.alive;
+    if(e.corpse){e.corpse.visible=now<e.deadUntil;if(now>=e.deadUntil)discardCorpse(e);}
+    const m=e.mesh;
+    if(e.alive || now<e.deadUntil){
+      m.position.x+=(e.tx-m.position.x)*k; m.position.y+=(e.ty-m.position.y)*k; m.position.z+=(e.tz-m.position.z)*k;
+      let dy=e.tyaw-m.rotation.y;dy=Math.atan2(Math.sin(dy),Math.cos(dy));m.rotation.y+=dy*k;
+      if(!e.alive) m.rotation.z=.95; else m.rotation.z=0;
+      m.userData.head.rotation.x=e.tpitch;
+      (m.userData.damageMeshes||[]).forEach((part,i)=>part.material.color.copy(now<e.hitUntil?new THREE.Color(0xff1717):m.userData.damageBase[i]));
+    }
+  }
+}
+
+let dmgTimer = 0, hitTimer = 0, shakeTimer=0;
+function flashDamage() { const d = $('dmg'); d.style.transition = 'none'; d.style.opacity = 0.9; void d.offsetWidth; d.style.transition = 'opacity .5s'; d.style.opacity = 0; }
+function showHitMarker(head) { const h = $('hitm'); h.style.color = head ? '#ff4d4d' : '#ffffff'; h.style.transition = 'none'; h.style.opacity = 1; void h.offsetWidth; h.style.transition = 'opacity .25s'; h.style.opacity = 0; }
+
+function addFeed(text) {
+  const f = $('feed'); const d = document.createElement('div'); d.textContent = text; f.appendChild(d);
+  while (f.children.length > 5) f.removeChild(f.firstChild);
+  setTimeout(() => { if (d.parentNode) d.parentNode.removeChild(d); }, 5000);
+}
+
+function updateHud(dt) {
+  $('ammo').textContent = me.reloading ? 'リロード中…' : `${me.ammo} / ${CFG.mag}`;
+  $('bombInfo').textContent = `C4 ${me.bombs||0}`;
+  $('banner').textContent = gameWin ? `🏆 ${gameWin} の勝利!` : '';
+  boardAcc += dt;
+  if (boardAcc > 0.25) {
+    boardAcc = 0;
+    const box = $('board'); box.textContent = '';
+    const t = document.createElement('div'); t.className = 't'; t.textContent = `${CFG.killLimit}キルで勝利  (K / D)`; box.appendChild(t);
+    boardData.slice().sort((a, b) => b.k - a.k || a.d - b.d).forEach(p => {
+      const r = document.createElement('div'); r.className = 'r' + (p.id === net.myId ? ' me' : '');
+      const a = document.createElement('span'); a.textContent = p.name;
+      const b = document.createElement('span'); b.textContent = `${p.k} / ${p.d}`;
+      r.appendChild(a); r.appendChild(b); box.appendChild(r);
+    });
+  }
+}
+
+let lastT = performance.now();
+function loop(t) {
+  requestAnimationFrame(loop);
+  const dt = Math.min((t - lastT) / 1000, 0.05); lastT = t;
+  if (running) {
+    updateMe(dt); netUpdate(dt); updateEnts(dt); updateTracers(dt); updateCombatFx(dt); updateHud(dt);
+  } else {
+    const a = t * 0.00012;
+    camera.position.set(Math.cos(a) * 38, 14, Math.sin(a) * 38); camera.lookAt(0, 1, 0);
+  }
+  renderer.render(scene, camera);
+}
+requestAnimationFrame(loop);
+
+/* =========================================================
+   メニュー
+   ========================================================= */
+$('nameInput').value = localStorage.getItem('fps_name') || ('Player' + (100 + Math.floor(Math.random() * 900)));
+sens = parseFloat(localStorage.getItem('fps_sens')) || 1; $('sensInput').value = sens;
+$('sensInput').addEventListener('input', e => { sens = parseFloat(e.target.value); try { localStorage.setItem('fps_sens', sens); } catch (x) {} });
+const touchDefaults={fireX:88,fireY:78,fireSize:112,aimX:72,aimY:76,aimSize:82};
+const touchSettings={...touchDefaults};
+Object.keys(touchDefaults).forEach(key=>{const saved=parseFloat(localStorage.getItem('fps_'+key));if(Number.isFinite(saved))touchSettings[key]=saved;});
+function applyTouchSettings(){
+  const root=document.documentElement.style;
+  root.setProperty('--touch-x',touchSettings.fireX+'%');root.setProperty('--touch-y',touchSettings.fireY+'%');root.setProperty('--fire-size',touchSettings.fireSize+'px');
+  root.setProperty('--aim-x',touchSettings.aimX+'%');root.setProperty('--aim-y',touchSettings.aimY+'%');root.setProperty('--aim-size',touchSettings.aimSize+'px');
+  Object.keys(touchSettings).forEach(key=>{const input=$(key+'Input'),out=$(key+'Out');input.value=touchSettings[key];out.value=key.toLowerCase().includes('size')?touchSettings[key]+'px':touchSettings[key]+'%';});
+}
+Object.keys(touchSettings).forEach(key=>$(key+'Input').addEventListener('input',e=>{touchSettings[key]=parseFloat(e.target.value);try{localStorage.setItem('fps_'+key,touchSettings[key]);}catch(x){}applyTouchSettings();}));
+applyTouchSettings();
+
+function prepare() {
+  initAudio();
+  me.name = cleanName($('nameInput').value);
+  try { localStorage.setItem('fps_name', me.name); } catch (e) {}
+}
+$('btnQuick').addEventListener('click', () => { prepare(); quickMatch(); });
+$('btnCreate').addEventListener('click', () => { prepare(); createRoom(); });
+$('btnJoin').addEventListener('click', () => { prepare(); joinByCode(); });
+$('btnLeave').addEventListener('click', () => { if (confirm('退出してメニューに戻りますか?')) leaveGame(''); });
+addEventListener('beforeunload', () => { try { if (net.peer) net.peer.destroy(); } catch (e) {} });
+</script>
+</body>
+</html>
