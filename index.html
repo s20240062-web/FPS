@@ -31,17 +31,14 @@
   .btn:active { filter: brightness(.85); }
   #status { min-height: 22px; margin-top: 10px; font-size: 14px; color: #ffd166; }
   .help { margin-top: 12px; font-size: 12px; color: #8a99c4; line-height: 1.6; }
-  .controlSettings { margin: 10px 0; padding: 10px 12px; border: 1px solid #344055; border-radius: 10px; background: rgba(0,0,0,.18); }
-  .controlSettings summary { cursor: pointer; color: #d0d8e7; font-size: 14px; font-weight: 700; }
-  .controlSettings .row { margin: 7px 0; }
-  .controlSettings .row label { min-width: 132px; font-size: 12px; }
-  .controlSettings output { width: 42px; text-align: right; color: #ffd166; font-size: 12px; }
 
   /* ---- hud ---- */
   #hud { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
   #roomInfo { position: absolute; left: calc(12px + var(--safe-l)); top: calc(10px + var(--safe-t)); font-size: 13px; background: rgba(0,0,0,.4); padding: 6px 10px; border-radius: 8px; }
-  #btnLeave { position: absolute; left: calc(12px + var(--safe-l)); top: calc(46px + var(--safe-t)); pointer-events: auto;
-    background: rgba(0,0,0,.45); color: #fff; border: 1px solid #ffffff55; border-radius: 8px; padding: 6px 12px; font-size: 13px; }
+  #hudBtns { position: fixed; inset: 0; z-index: 14; pointer-events: none; }
+  #hudBtns button { position: absolute; pointer-events: auto; background: rgba(0,0,0,.45); color: #fff; border: 1px solid #ffffff55; border-radius: 8px; padding: 6px 12px; font-size: 13px; }
+  #btnLeave { left: calc(12px + var(--safe-l)); top: calc(46px + var(--safe-t)); }
+  #btnLayout { left: calc(12px + var(--safe-l)); top: calc(84px + var(--safe-t)); }
   #ammo { position: absolute; left: 50%; top: calc(12px + var(--safe-t)); transform: translateX(-50%); font-size: 18px; font-weight: 800; text-shadow: 0 1px 3px #000; }
   #bombInfo { position: absolute; left: 50%; top: calc(38px + var(--safe-t)); transform: translateX(-50%); font-size: 13px; font-weight: 700; color: #ffd18a; text-shadow: 0 1px 3px #000; }
   #board { position: absolute; right: calc(12px + var(--safe-r)); top: calc(10px + var(--safe-t)); min-width: 150px; background: rgba(0,0,0,.4); border-radius: 8px; padding: 6px 10px; font-size: 13px; }
@@ -52,12 +49,20 @@
   #feed div { background: rgba(0,0,0,.45); padding: 3px 8px; border-radius: 6px; margin-top: 3px; display: inline-block; clear: both; float: right; }
   #cross { position: absolute; left: 50%; top: 50%; width: 22px; height: 22px; transform: translate(-50%,-50%); }
   #cross::before, #cross::after { content: ""; position: absolute; background: #fff; box-shadow: 0 0 2px #000; }
+  body.isAiming #cross { display:none; }
+  body.isAiming #scope { display:block; }
   #cross::before { left: 10px; top: 0; width: 2px; height: 22px; -webkit-mask: linear-gradient(#000 0 7px, transparent 7px 15px, #000 15px); mask: linear-gradient(#000 0 7px, transparent 7px 15px, #000 15px); }
   #cross::after { top: 10px; left: 0; height: 2px; width: 22px; -webkit-mask: linear-gradient(90deg, #000 0 7px, transparent 7px 15px, #000 15px); mask: linear-gradient(90deg, #000 0 7px, transparent 7px 15px, #000 15px); }
   #hitm { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; transform: translate(-50%,-50%) rotate(45deg); opacity: 0; transition: opacity .15s; }
   #hitm::before, #hitm::after { content: ""; position: absolute; background: currentColor; }
   #hitm::before { left: 14px; top: 0; width: 3px; height: 30px; }
   #hitm::after { top: 14px; left: 0; height: 3px; width: 30px; }
+  /* 照準時は通常クロスヘアを隠し、円形スコープと精密レティクルを表示 */
+  #scope { display:none; position:absolute; left:50%; top:50%; width:min(68vw,68vh); aspect-ratio:1; transform:translate(-50%,-50%); border:10px solid rgba(12,14,17,.96); border-radius:50%; box-shadow:0 0 0 200vmax rgba(0,0,0,.68), 0 0 0 2px #b5b9bd, inset 0 0 22px rgba(0,0,0,.45); pointer-events:none; overflow:hidden; }
+  #scope::before { content:""; position:absolute; inset:0; background:radial-gradient(circle, transparent 58%, rgba(0,0,0,.22) 100%); }
+  #scope::after { content:""; position:absolute; left:50%; top:50%; width:2px; height:70%; transform:translate(-50%,-50%); background:rgba(20,24,27,.92); box-shadow:0 0 1px #fff; }
+  #scope .scopeH { position:absolute; left:15%; top:50%; width:70%; height:2px; transform:translateY(-50%); background:rgba(20,24,27,.92); box-shadow:0 0 1px #fff; }
+  #scope .scopeDot { position:absolute; left:50%; top:50%; width:5px; height:5px; transform:translate(-50%,-50%); border:1px solid #17191b; border-radius:50%; background:#d33; }
   #dmg { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 45%, rgba(255,0,0,.75) 100%); opacity: 0; transition: opacity .35s; }
   #banner { position: absolute; left: 50%; top: 28%; transform: translateX(-50%); font-size: 34px; font-weight: 900; text-shadow: 0 2px 8px #000; text-align: center; }
   #deadmsg { position: absolute; left: 50%; top: 42%; transform: translateX(-50%); font-size: 24px; font-weight: 800; color: #ff6b6b; text-shadow: 0 2px 6px #000; }
@@ -69,15 +74,34 @@
   #lookZone { position: absolute; right: 0; top: 0; width: 58%; height: 100%; }
   #stickBase { display: none; position: absolute; width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,.12); border: 2px solid rgba(255,255,255,.35); pointer-events: none; }
   #stickKnob { position: absolute; left: 35px; top: 35px; width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,.5); }
-  .tbtn { position: absolute; border-radius: 50%; border: 2px solid rgba(255,255,255,.6); background: rgba(255,255,255,.18); color: #fff; font-size: 30px; display: flex; align-items: center; justify-content: center; padding: 0; }
+  /* ボタンの位置(left/top = 画面の%)と大きさ(--bs)はJSが設定する */
+  .tbtn { position: absolute; left: 50%; top: 50%; width: var(--bs, 72px); height: var(--bs, 72px); transform: translate(-50%,-50%);
+    border-radius: 50%; border: 2px solid rgba(255,255,255,.6); background: rgba(255,255,255,.18); color: #fff; font-family: inherit;
+    font-size: calc(var(--bs, 72px) * .36); display: flex; align-items: center; justify-content: center; padding: 0; touch-action: none; }
+  .tbtn.txt { font-size: calc(var(--bs, 72px) * .2); font-weight: 800; line-height: 1.15; }
   .tbtn:active { background: rgba(255,255,255,.4); }
-  #btnFire, #btnAim { left: var(--touch-x, 88%); top: var(--touch-y, 78%); transform: translate(-50%,-50%); touch-action: none; }
-  #btnFire { width: var(--fire-size, 112px); height: var(--fire-size, 112px); background: rgba(190,42,35,.5); border-color: rgba(255,185,175,.85); font-size: 40px; box-shadow: 0 0 20px #e33a2c55, inset 0 0 16px #ffb0a033; }
-  #btnAim { left: var(--aim-x, 72%); top: var(--aim-y, 76%); width: var(--aim-size, 82px); height: var(--aim-size, 82px); background: rgba(58,69,77,.72); font-size: 27px; }
+  .tbtn.on { background: rgba(230,185,78,.6); border-color: #ffd166; box-shadow: 0 0 14px #ffd16677; }
+  #btnFire { background: rgba(190,42,35,.5); border-color: rgba(255,185,175,.85); box-shadow: 0 0 20px #e33a2c55, inset 0 0 16px #ffb0a033; }
+  #btnFire:active { background: rgba(230,70,60,.7); }
+  #btnAim { background: rgba(58,69,77,.72); }
   #btnAim.aiming { background: rgba(230,185,78,.75); box-shadow: 0 0 18px #ffd16688; }
-  #btnBomb { width: 68px; height: 68px; left: 54px; bottom: calc(188px + var(--safe-b)); font-size: 26px; background: rgba(117,75,35,.65); }
-  #btnJump { width: 78px; height: 78px; right: calc(156px + var(--safe-r)); bottom: calc(34px + var(--safe-b)); }
-  #btnReload { width: 64px; height: 64px; right: calc(60px + var(--safe-r)); bottom: calc(156px + var(--safe-b)); font-size: 26px; }
+  #btnBomb { font-weight: 800; background: rgba(117,75,35,.65); }
+
+  /* ---- ボタン配置の編集モード ---- */
+  #touch.editing::before { content: ""; position: absolute; inset: 0; background: rgba(8,12,24,.5); pointer-events: none; }
+  #touch.editing #stickZone, #touch.editing #lookZone { pointer-events: none; }
+  #touch.editing .tbtn { border-style: dashed; border-color: #fff; cursor: grab; }
+  #touch.editing .tbtn::after { content: attr(data-label); position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 5px;
+    white-space: nowrap; font-size: 12px; font-weight: 700; line-height: 1; color: #fff; text-shadow: 0 1px 3px #000; }
+  #touch.editing .tbtn.sel { outline: 3px solid #ffd166; outline-offset: 3px; }
+  #layoutEditor { position: fixed; left: 50%; top: calc(8px + var(--safe-t)); transform: translateX(-50%); z-index: 70; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 12px;
+    width: max-content; max-width: 96vw; padding: 8px 12px; background: rgba(20,26,44,.95); border: 1px solid #3a4770; border-radius: 12px; font-size: 13px; }
+  #layoutEditor .msg { color: #b9c6e8; line-height: 1.45; max-width: 250px; }
+  #layoutEditor .sz { display: flex; align-items: center; gap: 8px; }
+  #layoutEditor .sz b { color: #ffd166; min-width: 4.8em; }
+  #layoutEditor .sz input[type=range] { width: 120px; flex: none; }
+  #layoutEditor .sz output { width: 44px; color: #ffd166; font-size: 12px; }
+  #layoutEditor .btn { padding: 10px 14px; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -86,27 +110,41 @@
 
 <div id="hud" class="hidden">
   <div id="roomInfo"></div>
-  <button id="btnLeave">退出</button>
   <div id="ammo"></div>
   <div id="bombInfo"></div>
   <div id="board"></div>
   <div id="feed"></div>
   <div id="cross"></div>
+  <div id="scope"><i class="scopeH"></i><i class="scopeDot"></i></div>
   <div id="hitm"></div>
   <div id="dmg"></div>
   <div id="banner"></div>
   <div id="deadmsg" class="hidden">撃破された…まもなく復活</div>
 </div>
 
+<div id="hudBtns" class="hidden">
+  <button id="btnLeave">退出</button>
+  <button id="btnLayout">🎛 ボタン配置</button>
+</div>
+
 <div id="touch" class="hidden">
   <div id="stickZone"></div>
   <div id="lookZone"></div>
   <div id="stickBase"><div id="stickKnob"></div></div>
-  <button class="tbtn" id="btnJump">⤒</button>
-  <button class="tbtn" id="btnReload">⟳</button>
-  <button class="tbtn" id="btnBomb" aria-label="爆弾を投げる">C4</button>
-  <button class="tbtn" id="btnAim" aria-label="照準を覗く">◎</button>
-  <button class="tbtn" id="btnFire" aria-label="射撃">🔫</button>
+  <button class="tbtn" id="btnJump" data-key="jump" aria-label="ジャンプ">⤒</button>
+  <button class="tbtn" id="btnReload" data-key="reload" aria-label="リロード">⟳</button>
+  <button class="tbtn" id="btnBomb" data-key="bomb" aria-label="C4を長押しで設置・再押下で起爆">C4</button>
+  <button class="tbtn txt" id="btnCrouch" data-key="crouch" aria-label="しゃがむ">しゃがむ</button>
+  <button class="tbtn txt" id="btnProne" data-key="prone" aria-label="伏せる">伏せる</button>
+  <button class="tbtn" id="btnAim" data-key="aim" aria-label="照準を覗く">◎</button>
+  <button class="tbtn" id="btnFire" data-key="fire" aria-label="射撃">🔫</button>
+</div>
+
+<div id="layoutEditor" class="hidden">
+  <div class="msg">ボタンをドラッグして好きな位置へ。タップで選ぶと大きさを変えられます。</div>
+  <div class="sz"><b id="editSizeName">射撃</b><input type="range" id="editSize" min="48" max="170" step="2"><output id="editSizeOut"></output></div>
+  <button class="btn sub2" id="editReset">初期配置</button>
+  <button class="btn" id="editDone">完了</button>
 </div>
 
 <div id="resume" class="hidden">クリックして操作を再開</div>
@@ -117,15 +155,7 @@
     <p class="sub">飛び込み参加OKのデスマッチ(土台 v0.1)</p>
     <div class="row"><label>名前</label><input type="text" id="nameInput" maxlength="12"></div>
     <div class="row"><label>視点感度</label><input type="range" id="sensInput" min="0.3" max="2.5" step="0.05" value="1"></div>
-      <details class="controlSettings">
-        <summary>タッチボタンの配置・サイズ</summary>
-        <div class="row"><label>射撃ボタン 横</label><input type="range" id="fireXInput" min="5" max="95" step="1"><output id="fireXOut"></output></div>
-        <div class="row"><label>射撃ボタン 縦</label><input type="range" id="fireYInput" min="8" max="92" step="1"><output id="fireYOut"></output></div>
-        <div class="row"><label>射撃ボタン 大きさ</label><input type="range" id="fireSizeInput" min="68" max="160" step="2"><output id="fireSizeOut"></output></div>
-        <div class="row"><label>照準ボタン 横</label><input type="range" id="aimXInput" min="5" max="95" step="1"><output id="aimXOut"></output></div>
-        <div class="row"><label>照準ボタン 縦</label><input type="range" id="aimYInput" min="8" max="92" step="1"><output id="aimYOut"></output></div>
-        <div class="row"><label>照準ボタン 大きさ</label><input type="range" id="aimSizeInput" min="58" max="132" step="2"><output id="aimSizeOut"></output></div>
-      </details>
+      <button class="btn sub2" id="btnEditLayout" style="width:100%;margin:4px 0 12px">🎛 ボタン配置を編集(ドラッグで移動)</button>
       <button class="btn main" id="btnQuick">⚡ クイック参加(飛び込み)</button>
     <div class="row" style="margin-top:14px">
       <button class="btn sub2" id="btnCreate">部屋を作る</button>
@@ -135,8 +165,8 @@
     <div id="status"></div>
     <div class="help">
       クイック参加: 誰かが開いている公開ルームに入ります。誰もいなければあなたが部屋を開き、後から来た人が飛び込めます。<br>
-      PC: WASD移動 / マウス視点 / クリック射撃 / スペースでジャンプ / Rでリロード<br>
-      タブレット: 左で移動、右側ドラッグで視点、🔫を押したままドラッグで射撃、◎は長押し照準。G/C4で爆弾
+      PC: WASD移動 / マウス視点 / クリック射撃 / 右クリック照準 / スペースでジャンプ / Rでリロード / Cしゃがむ / Z伏せる(もう一度押すと解除)<br>
+      タブレット: 左で移動、右側ドラッグで視点、🔫を押したままドラッグで射撃。◎を長押ししながらドラッグすると照準中も視点移動できます。C4は長押しで位置を調整して離すと設置、設置後にもう一度押すと起爆。しゃがむ/伏せるはタップで切替、ジャンプで立ち上がり。ボタンの位置は「ボタン配置を編集」で自由に動かせます
     </div>
   </div>
 </div>
@@ -157,7 +187,7 @@ const CFG = {
   dmgHead: 36,
   fireMs: 110,          // 連射間隔(ms)
   mag: 30,
-  reloadMs: 1600,
+  reloadMs: 2850,
   spread: 0.012,
   range: 120,
   respawnMs: 3000,
@@ -166,10 +196,16 @@ const CFG = {
   jump: 8,
   gravity: 22,
   eye: 1.6,
-  radius: 0.4,
+  radius: 0.30,
   sendHz: 20,
-  arenaHalf: 30,
+  arenaHalf: 34,
 };
+// 姿勢: 0=立ち 1=しゃがみ 2=伏せ  (eye=目線の高さ / clear=必要な頭上の空き / h・hw=当たり判定の高さ・半幅 / headY=頭判定が始まる高さ / speed=移動速度の倍率)
+const STANCE = [
+  { eye: CFG.eye, clear: 1.72, h: 1.8,  hw: 0.30, headY: 1.45, speed: 1 },
+  { eye: 1.1,     clear: 1.2,  h: 1.25, hw: 0.30, headY: 0.95, speed: 0.5 },
+  { eye: 0.45,    clear: 0.55, h: 0.6,  hw: 0.38, headY: 0.35, speed: 0.22 },
+];
 const PUB_PREFIX  = 'fpsarena-x7q-pub-';   // クイック参加用の公開ルームID
 const ROOM_PREFIX = 'fpsarena-x7q-room-';   // コード指定の部屋ID
 const MAX_PUB = 5;                          // 公開ルームの数(満員なら次の番号へ)
@@ -185,34 +221,63 @@ const cleanName = s => (String(s || '').replace(/[<>&"'`]/g, '').trim().slice(0,
 ['gesturestart', 'gesturechange', 'gestureend'].forEach(ev => document.addEventListener(ev, e => e.preventDefault()));
 document.addEventListener('dblclick', e => e.preventDefault());
 document.addEventListener('contextmenu', e => e.preventDefault());
-document.addEventListener('touchmove', e => { if (running) e.preventDefault(); }, { passive: false });
+document.addEventListener('touchmove', e => { if (running || editMode) e.preventDefault(); }, { passive: false });
 
 /* =========================================================
    マップ(全員で同じ固定配置)
    [cx, cz, 幅, 奥行, 高さ]
    ========================================================= */
-const BOXES = [
-  [-14, -10, 4, 8, 2.5], [14, 10, 4, 8, 2.5], [-12, 14, 8, 3, 2], [12, -14, 8, 3, 2],
-  [0, -20, 10, 2, 3], [0, 20, 10, 2, 3], [-22, 0, 2, 10, 3], [22, 0, 2, 10, 3],
-  [-6, -8, 2, 2, 1.2], [6, 8, 2, 2, 1.2], [8, -6, 2, 2, 1.2], [-8, 6, 2, 2, 1.2],
-  [20, -22, 3, 3, 4], [-20, 22, 3, 3, 4],
-].map(([cx, cz, w, d, h]) => ({ cx, cz, w, d, h, y: 0, hw: w / 2, hd: d / 2 }));
-// 3階建ての開放型鉄骨タワー。床とステップは全員共通の衝突面。
-const TOWER = [
-  {cx:0,cz:0,w:10,d:10,h:.24,y:0},
-  {cx:0,cz:0,w:10,d:10,h:.24,y:3.05},
-  {cx:0,cz:0,w:10,d:10,h:.24,y:6.10},
-  ...[[-4.75,-4.75],[-4.75,4.75],[4.75,-4.75],[4.75,4.75]].map(([cx,cz])=>({cx,cz,w:.32,d:.32,h:6.4,y:0})),
-  ...Array.from({length:11},(_,i)=>({cx:-3.25,cz:7-i*.54,w:1.15,d:.62,h:.28,y:i*.28})),
-  ...Array.from({length:11},(_,i)=>({cx:3.25,cz:4.8-i*.54,w:1.15,d:.62,h:.28,y:3.25+i*.28})),
-];
-BOXES.push(...TOWER.map(b=>({...b,hw:b.w/2,hd:b.d/2,tower:true})));
+const BOXES = [];
+function addBox(cx, cz, w, d, h, y = 0, kind = 'crate') {
+  BOXES.push({ cx, cz, w, d, h, y, hw: w / 2, hd: d / 2, kind });
+}
+// 屋外の遮蔽物 [cx, cz, 幅, 奥行, 高さ]
+[
+  [0, 0, 2.8, 2.8, 1.2], [-3.2, -4.5, 1.6, 1.6, 1.2], [3.2, 4.5, 1.6, 1.6, 1.2],
+  [0, -11, 7, 1.2, 2.2], [0, 11, 7, 1.2, 2.2],
+  [-15, -14, 9, 1.4, 2.2], [15, 14, 9, 1.4, 2.2], [-15, 14, 5, 1.4, 1.4], [15, -14, 5, 1.4, 1.4],
+  [-26, -14, 2.6, 2.6, 1.2], [26, 14, 2.6, 2.6, 1.2], [-26, 14, 2.6, 2.6, 2.4], [26, -14, 2.6, 2.6, 2.4],
+  [-28.5, -4, 1.4, 6, 2.4], [28.5, 4, 1.4, 6, 2.4],
+  [-9, -24, 6, 1.4, 2.2], [9, 24, 6, 1.4, 2.2], [-22, -26, 4, 2, 1.2], [22, 26, 4, 2, 1.2],
+].forEach(([cx, cz, w, d, h]) => addBox(cx, cz, w, d, h, 0, 'crate'));
+
+// 2階建ての建物(14 x 12)。1階=外壁+戸口、2階=床(階段の上は穴)、階段、屋上の低い壁。
+// 階段は1段0.25m(段差0.34m以下なので歩いて上がれる)。最上段は2階の床と同じ高さ。
+const FLOOR_H = 3.0, SLAB_T = 0.24, STEP_N = 12;
+function addBuilding(bx, bz, flip) {
+  const sg = flip ? -1 : 1;                                     // flip=true なら建物を180度回転(階段の位置が反対側になる)
+  const put = (lx, lz, w, d, h, y, kind) => addBox(bx + sg * lx, bz + sg * lz, w, d, h, y, kind);
+  const T = 0.4, WH = FLOOR_H;
+  // 1階の外壁(戸口あり)
+  put(-2.75, -6, 8.5, T, WH, 0, 'wall'); put(5.75, -6, 2.5, T, WH, 0, 'wall');     // 北: 戸口 x=1.5〜4.5
+  put(-6.75, 6, 0.5, T, WH, 0, 'wall');  put(2.25, 6, 9.5, T, WH, 0, 'wall');      // 南: 戸口 x=-6.5〜-2.5(階段の入口)
+  put(-7, 0, T, 12, WH, 0, 'wall');                                                 // 西: 全面壁
+  put(7, -3.75, T, 4.5, WH, 0, 'wall');  put(7, 3.75, T, 4.5, WH, 0, 'wall');      // 東: 戸口 z=-1.5〜1.5
+  // 1階の中の遮蔽物
+  put(0, 0, 0.8, 0.8, WH, 0, 'wall'); put(2.8, -2.6, 1.6, 1.6, 1.0, 0, 'crate'); put(3, 2.8, 3, 0.4, 1.3, 0, 'wall');
+  // 2階の床。階段(x=-6〜-3, z=-2〜4.4)の上は穴をあけて頭がぶつからないようにしてある
+  const sy = FLOOR_H - SLAB_T;
+  put(0, -4, 14, 4, SLAB_T, sy, 'floor');      put(0, 5.2, 14, 1.6, SLAB_T, sy, 'floor');
+  put(2, 1.2, 10, 6.4, SLAB_T, sy, 'floor');   put(-6.5, 1.2, 1, 6.4, SLAB_T, sy, 'floor');
+  // 階段(南から北へ上る)
+  for (let i = 0; i < STEP_N; i++) put(-4.5, 3.75 - i * 0.5, 2.2, 0.5, (i + 1) * (FLOOR_H / STEP_N), 0, i % 2 ? 'stair2' : 'stair');
+  // 2階の低い壁(しゃがみ・伏せで身を隠せる高さ。端の隙間から飛び降りられる)
+  const PH = 1.1, PT = 0.3;
+  put(-4.1, -5.85, 5.8, PT, PH, FLOOR_H, 'wall'); put(4.1, -5.85, 5.8, PT, PH, FLOOR_H, 'wall');
+  put(2.3, 5.85, 9.4, PT, PH, FLOOR_H, 'wall');
+  put(6.85, -4.2, PT, 3.6, PH, FLOOR_H, 'wall'); put(6.85, 4.2, PT, 3.6, PH, FLOOR_H, 'wall');
+  put(-6.85, 0, PT, 12, PH, FLOOR_H, 'wall');
+  // 2階の遮蔽物
+  put(3, -2.5, 1.6, 1.6, 1.2, FLOOR_H, 'crate'); put(1.5, 2.5, 3, 0.4, 1.4, FLOOR_H, 'wall');
+}
+addBuilding(-15, 0, false);
+addBuilding(15, 0, true);
 const A = CFG.arenaHalf;
 const WALLS = [
   [0, -A - 0.5, A * 2 + 2, 1, 6], [0, A + 0.5, A * 2 + 2, 1, 6], [-A - 0.5, 0, 1, A * 2 + 2, 6], [A + 0.5, 0, 1, A * 2 + 2, 6],
 ].map(([cx, cz, w, d, h]) => ({ cx, cz, w, d, h, hw: w / 2, hd: d / 2 }));
 const RAY_SOLIDS = BOXES.concat(WALLS);
-const SPAWNS = [[-26, -26], [26, 26], [-26, 26], [26, -26], [0, -26], [0, 26], [-26, 0], [26, 0]];
+const SPAWNS = [[-30, -30], [30, 30], [-30, 30], [30, -30], [0, -30], [0, 30], [-30, 0], [30, 0]];
 
 /* =========================================================
    three.js シーン
@@ -229,8 +294,8 @@ scene.fog = new THREE.Fog(0x22282d, 58, 125);
 const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.05, 220);
 camera.rotation.order = 'YXZ';
 scene.add(camera);
-scene.add(new THREE.HemisphereLight(0xb8c5ce, 0x252a2d, 0.72));
-const sun = new THREE.DirectionalLight(0xdce5ec, 0.9); sun.position.set(-18, 32, 12); scene.add(sun);
+scene.add(new THREE.HemisphereLight(0xdce8f2, 0x41474b, 1.15));
+const sun = new THREE.DirectionalLight(0xe8eff5, 1.15); sun.position.set(-18, 32, 12); scene.add(sun);
 
 (function buildWorld() {
   const c = document.createElement('canvas'); c.width = c.height = 256;
@@ -241,22 +306,33 @@ const sun = new THREE.DirectionalLight(0xdce5ec, 0.9); sun.position.set(-18, 32,
     g.strokeStyle='#3c4245'; g.lineWidth=2; g.strokeRect(x+2,y+2,60,60);
     g.fillStyle='#62696c'; [[7,7],[57,7],[7,57],[57,57]].forEach(([dx,dy])=>{g.beginPath();g.arc(x+dx,y+dy,1.7,0,Math.PI*2);g.fill();});
   }
-  const tex = new THREE.CanvasTexture(c); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(8, 8);
+  const tex = new THREE.CanvasTexture(c); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(A * 2 / 7.5, A * 2 / 7.5);
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(A*2,A*2), new THREE.MeshStandardMaterial({map:tex, color:0x858b8f, roughness:.96, metalness:.18}));
   floor.rotation.x = -Math.PI/2; scene.add(floor);
   const metal = new THREE.MeshStandardMaterial({color:0x4a5054, roughness:.78, metalness:.72});
-  const towerMat = new THREE.MeshStandardMaterial({color:0x62696c, roughness:.6, metalness:.82});
+  const mats = {
+    wall:   new THREE.MeshStandardMaterial({color:0x858d91, emissive:0x252a2c, roughness:.82, metalness:.25}),
+    floor:  new THREE.MeshStandardMaterial({color:0x737a7e, emissive:0x171a1c, roughness:.7, metalness:.35}),
+    stair:  new THREE.MeshStandardMaterial({color:0x929a9d, emissive:0x202426, roughness:.7, metalness:.3}),
+    stair2: new THREE.MeshStandardMaterial({color:0x70787b, emissive:0x1a1d1f, roughness:.7, metalness:.3}),
+  };
   BOXES.forEach((b,i)=>{
-    const m=new THREE.Mesh(new THREE.BoxGeometry(b.w,b.h,b.d), b.tower?towerMat:metal);
+    const m=new THREE.Mesh(new THREE.BoxGeometry(b.w,b.h,b.d), mats[b.kind]||metal);
     m.position.set(b.cx,b.y+b.h/2,b.cz); scene.add(m);
-    if (!b.tower && b.h > 1.5) {
+    if (b.kind === 'crate' && b.h > 1.5) {
       const band=new THREE.Mesh(new THREE.BoxGeometry(b.w+.025,.08,b.d+.025),new THREE.MeshStandardMaterial({color:0x353a3d,metalness:.68,roughness:.72}));
       band.position.set(b.cx,b.y+b.h*.72,b.cz); scene.add(band);
     }
   });
   WALLS.forEach(b=>{const m=new THREE.Mesh(new THREE.BoxGeometry(b.w,b.h,b.d),new THREE.MeshStandardMaterial({color:0x3a4044,metalness:.7,roughness:.8}));m.position.set(b.cx,b.h/2,b.cz);scene.add(m);});
-  // 工業灯の控えめなアンバー光
-  [[-12,0,-10],[12,0,10],[0,0,0]].forEach(([x,_,z])=>{const l=new THREE.PointLight(0xffb45b,1.4,13,2);l.position.set(x,5,z);scene.add(l);});
+  // 建物内部を明るくする天井灯。上下階に複数配置
+  [-15,15].forEach(cx=>{
+    [[-3.8,2.72,-2.8],[3.8,2.72,2.8],[-3.8,5.72,-2.8],[3.8,5.72,2.8],[0,2.72,3.8],[0,5.72,-3.8]].forEach(([ox,y,oz])=>{
+      const lamp=new THREE.Mesh(new THREE.BoxGeometry(.42,.08,.22),new THREE.MeshBasicMaterial({color:0xffdf9a}));
+      lamp.position.set(cx+ox,y,oz); scene.add(lamp);
+      const l=new THREE.PointLight(0xffd08a,2.25,11,1.5); l.position.set(cx+ox,y-.08,oz); scene.add(l);
+    });
+  });
 })();
 
 // 一人称の銃(見た目だけ)
@@ -265,9 +341,22 @@ const viewGun = new THREE.Group();
   const body = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.12, 0.55), new THREE.MeshLambertMaterial({ color: 0x2b2d36 }));
   const barrel = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.04, 0.3), new THREE.MeshLambertMaterial({ color: 0x15161b }));
   barrel.position.set(0, 0.02, -0.4);
-  viewGun.add(body, barrel);
+  const scopeTube = new THREE.Mesh(new THREE.CylinderGeometry(.047,.047,.2,12),new THREE.MeshLambertMaterial({color:0x171a20}));
+  scopeTube.rotation.x=Math.PI/2; scopeTube.position.set(0,.105,-.12);
+  const scopeLens = new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,.008,12),new THREE.MeshBasicMaterial({color:0x476272}));
+  scopeLens.rotation.x=Math.PI/2; scopeLens.position.set(0,.105,-.224);
+  const magazine = new THREE.Mesh(new THREE.BoxGeometry(.075,.16,.12),new THREE.MeshLambertMaterial({color:0x20232a}));
+  magazine.position.set(0,-.105,-.12); magazine.name='magazine';
+  viewGun.add(body, barrel, scopeTube, scopeLens, magazine);
+  viewGun.userData.magazine=magazine;
   viewGun.position.set(0.24, -0.22, -0.5);
   camera.add(viewGun);
+  // リロード時に画面内へ入る左手と袖
+  const reloadHand = new THREE.Group();
+  const sleeve = new THREE.Mesh(new THREE.BoxGeometry(.13,.15,.28),new THREE.MeshLambertMaterial({color:0x343b45}));
+  const palm = new THREE.Mesh(new THREE.BoxGeometry(.105,.085,.12),new THREE.MeshLambertMaterial({color:0xb58e72}));
+  palm.position.set(0,.015,-.18); reloadHand.add(sleeve,palm); reloadHand.visible=false; camera.add(reloadHand);
+  window.reloadHand = reloadHand;
 })();
 let recoil = 0;
 
@@ -280,11 +369,11 @@ addEventListener('resize', () => {
    ゲーム状態
    ========================================================= */
 let running = false;
-const me = { x: 0, y: 0, z: 0, vy: 0, yaw: 0, pitch: 0, onGround: true, hp: CFG.hp, dead: false, k: 0, d: 0, bombs: 1,
-             ammo: CFG.mag, reloading: false, reloadEnd: 0, lastShot: 0, name: 'Player' };
+const me = { x: 0, y: 0, z: 0, vy: 0, yaw: 0, pitch: 0, onGround: true, hp: CFG.hp, dead: false, k: 0, d: 0, bombs: 1, c4Placed:false,
+             ammo: CFG.mag, reloading: false, reloadStart: 0, reloadEnd: 0, lastShot: 0, name: 'Player', stance: 0, eye: CFG.eye };
 let sens = 1;
 let gameWin = null;           // 勝者名(試合終了中)
-let firing = false, aiming = false, jumpReq = false, reloadReq = false;
+let firing = false, aiming = false, jumpReq = false, reloadReq = false, stanceReq = null, editMode = false;
 const keys = {};
 const ents = new Map();       // 他プレイヤーの表示用 id -> {mesh,label,tx,ty,tz,tyaw,tpitch,alive,...}
 let boardData = [];
@@ -296,11 +385,11 @@ let hostState = { win: null, winAt: 0, hueCounter: 0 };
 /* =========================================================
    衝突判定・レイキャスト
    ========================================================= */
-function blocked(x, z, feetY) {
+function blocked(x, z, feetY, hgt = 1.72) {
   const R = CFG.radius;
   for (const b of BOXES) {
     const bottom=b.y||0, top=bottom+b.h;
-    if (top > feetY + 0.35 && bottom < feetY + 1.72 && x > b.cx-b.hw-R && x < b.cx+b.hw+R && z > b.cz-b.hd-R && z < b.cz+b.hd+R) return true;
+    if (top > feetY + 0.35 && bottom < feetY + hgt && x > b.cx-b.hw-R && x < b.cx+b.hw+R && z > b.cz-b.hd-R && z < b.cz+b.hd+R) return true;
   }
   return false;
 }
@@ -370,11 +459,13 @@ function makeLabel(name) {
 function makePlayerMesh(hue, name) {
   const g = new THREE.Group();
   const col = new THREE.Color().setHSL(hue, 0.28, 0.42);
-  const body = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.95, 0.4), new THREE.MeshLambertMaterial({ color: col })); body.position.y = 1.0;
-  const legs = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.3), new THREE.MeshLambertMaterial({ color: 0x292d30 })); legs.position.y = 0.28;
-  const head = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.34, 0.34), new THREE.MeshLambertMaterial({ color: 0x88847e })); head.position.y = 1.65;
-  const gun = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.12, 0.6), new THREE.MeshLambertMaterial({ color: 0x17191b })); gun.position.set(0.32, 1.1, -0.35);
-  g.add(body, legs, head, gun, makeLabel(name));
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.95, 0.32), new THREE.MeshLambertMaterial({ color: col })); body.position.y = 1.0;
+  const legs = new THREE.Mesh(new THREE.BoxGeometry(0.39, 0.55, 0.25), new THREE.MeshLambertMaterial({ color: 0x292d30 })); legs.position.y = 0.28;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.29, 0.31, 0.29), new THREE.MeshLambertMaterial({ color: 0x88847e })); head.position.y = 1.65;
+  const gun = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.12, 0.6), new THREE.MeshLambertMaterial({ color: 0x17191b })); gun.position.set(0.24, 1.1, -0.30);
+  const label = makeLabel(name);
+  g.add(body, legs, head, gun, label);
+  g.userData.label = label;
   g.userData.head = head; g.userData.damageMeshes=[body,legs,head]; g.userData.damageBase=[body.material.color.clone(),legs.material.color.clone(),head.material.color.clone()];
   return g;
 }
@@ -383,22 +474,50 @@ function ensureEnt(id, name, hue) {
   if (!e) {
     const mesh = makePlayerMesh(hue, name);
     scene.add(mesh);
-    e = { id, mesh, tx: 0, ty: 0, tz: 0, tyaw: 0, tpitch: 0, alive: false, fresh: true, name, deadUntil: 0, hitUntil: 0 };
+    e = { id, mesh, tx: 0, ty: 0, tz: 0, tyaw: 0, tpitch: 0, alive: false, fresh: true, name, deadUntil: 0, hitUntil: 0, tstance: 0 };
     ents.set(id, e);
   }
   return e;
 }
 function removeEnt(id) {
   const e = ents.get(id); if (!e) return;
+  discardCorpse(e);
   scene.remove(e.mesh);
   e.mesh.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
   ents.delete(id);
 }
 function clearEnts() { for (const id of Array.from(ents.keys())) removeEnt(id); }
 
+// 倒された相手の死体(横倒しの暗いコピー)
+function createCorpse(e) {
+  discardCorpse(e);
+  const src = e.mesh, c = new THREE.Group();
+  src.children.forEach(ch => {
+    if (ch.isSprite) return;
+    const cl = ch.clone(); cl.material = ch.material.clone(); cl.material.color.multiplyScalar(0.55); c.add(cl);
+  });
+  c.position.set(src.position.x, src.position.y + 0.35, src.position.z);
+  c.rotation.y = src.rotation.y; c.rotation.z = Math.PI / 2; c.scale.copy(src.scale);
+  scene.add(c); e.corpse = c;
+}
+function discardCorpse(e) {
+  if (!e.corpse) return;
+  scene.remove(e.corpse);
+  e.corpse.traverse(o => { if (o.material) o.material.dispose(); });
+  e.corpse = null;
+}
+
 /* =========================================================
    弾道エフェクト
    ========================================================= */
+const c4Meshes=new Map();
+function setC4Model(id,x,y,z){
+  let m=c4Meshes.get(id);
+  if(!m){m=new THREE.Group();const box=new THREE.Mesh(new THREE.BoxGeometry(.32,.12,.23),new THREE.MeshStandardMaterial({color:0x282c2d,metalness:.55,roughness:.55}));const led=new THREE.Mesh(new THREE.SphereGeometry(.035,8,6),new THREE.MeshBasicMaterial({color:0xff321f}));led.position.set(.11,.08,0);m.add(box,led);m.userData.led=led;scene.add(m);c4Meshes.set(id,m);}
+  m.position.set(x,y,z);m.userData.led.material.color.setHex(Math.floor(performance.now()/350)%2?0xff321f:0xffb52e);
+}
+function removeC4Model(id){const m=c4Meshes.get(id);if(m){scene.remove(m);m.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose();});c4Meshes.delete(id);}}
+function syncC4(list){const keep=new Set();for(const b of list){keep.add(b.id);setC4Model(b.id,b.x,b.y,b.z);}for(const id of c4Meshes.keys())if(!keep.has(id))removeC4Model(id);}
 const tracers = [];
 function spawnTracer(ax, ay, az, bx, by, bz) {
   const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(ax, ay, az), new THREE.Vector3(bx, by, bz)]);
@@ -440,6 +559,8 @@ function onNetMsg(m) {
     case 'shot': drawRemoteShot(m); break;
     case 'hitfx': { const e=ents.get(m.id); if(e) e.hitUntil=performance.now()+260; break; }
     case 'boom': spawnExplosion(m.x,m.y,m.z); break;
+    case 'c4place': if(m.id===net.myId)me.c4Placed=true; setC4Model(m.id,m.x,m.y,m.z); break;
+    case 'c4remove': if(m.id===net.myId)me.c4Placed=false; removeC4Model(m.id); break;
     case 'kill': addFeed(`${m.k} ▶ ${m.v}`); if (m.kid === net.myId) sfx('kill'); break;
     case 'msg': addFeed(m.text); break;
     case 'respawn': onRespawn(m); break;
@@ -448,7 +569,8 @@ function onNetMsg(m) {
 
 function onRespawn(m) {
   me.x = m.x; me.y = m.y || 0; me.z = m.z; me.vy = 0; me.yaw = m.yaw; me.pitch = 0; me.onGround = true;
-  me.ammo = CFG.mag; me.bombs = 1; me.reloading = false; me.dead = false; me.hp = CFG.hp;
+  me.ammo = CFG.mag; me.bombs = 1; me.c4Placed=false; me.reloading = false; me.dead = false; me.hp = CFG.hp;
+  me.stance = 0; me.eye = CFG.eye; resetAim(); updateStanceButtons();
   $('deadmsg').classList.add('hidden');
 }
 
@@ -457,24 +579,25 @@ function applySnap(s) {
   const seen = new Set();
   boardData = [];
   for (const a of s.ps) {
-    const [id, name, x, y, z, yaw, pitch, hp, alive, k, d, hue, bombs] = a;
+    const [id, name, x, y, z, yaw, pitch, hp, alive, k, d, hue, bombs, stance, c4Placed] = a;
     seen.add(id);
     boardData.push({ id, name, k, d });
     if (id === net.myId) {
       if (alive && hp < me.hp) flashDamage();
-      me.hp = hp; me.k = k; me.d = d; me.bombs = bombs || 0;
-      if (!alive && !me.dead) { me.dead = true; firing = false; $('deadmsg').classList.remove('hidden'); }
+      me.hp = hp; me.k = k; me.d = d; me.bombs = bombs || 0; me.c4Placed=!!c4Placed;
+      if (!alive && !me.dead) { me.dead = true; firing = false; resetAim(); $('deadmsg').classList.remove('hidden'); }
       else if (alive && me.dead) { me.dead = false; $('deadmsg').classList.add('hidden'); }
     } else {
       const e = ensureEnt(id, name, hue);
       const wasAlive=e.alive, nextAlive=!!alive;
       if (wasAlive && !nextAlive) { e.deadUntil=performance.now()+8500; createCorpse(e); }
       if (!wasAlive && nextAlive && !e.fresh) { e.mesh.position.set(x,y,z); e.mesh.rotation.set(0,yaw,0); }
-      e.tx = x; e.ty = y; e.tz = z; e.tyaw = yaw; e.tpitch = pitch; e.alive = nextAlive;
+      e.tx = x; e.ty = y; e.tz = z; e.tyaw = yaw; e.tpitch = pitch; e.alive = nextAlive; e.tstance = stance | 0;
       if (e.fresh) { e.mesh.position.set(x, y, z); e.mesh.rotation.y = yaw; e.fresh = false; }
     }
   }
   for (const id of Array.from(ents.keys())) if (!seen.has(id)) removeEnt(id);
+  syncC4(s.c4||[]);
 }
 
 function drawRemoteShot(m) {
@@ -499,7 +622,7 @@ function pickSpawn() {
 }
 function spawnPlayer(p) {
   const [sx, sz] = pickSpawn();
-  p.x = sx; p.y = 0; p.z = sz; p.alive = true; p.hp = CFG.hp; p.bombs=1;
+  p.x = sx; p.y = 0; p.z = sz; p.alive = true; p.hp = CFG.hp; p.bombs=1; p.c4=null; p.stance = 0;
   hostEmit({ t: 'respawn', x: sx, y: 0, z: sz, yaw: Math.atan2(sx, sz) }, p.id);
 }
 function hostDamage(v,p,amount,head=false) {
@@ -511,7 +634,7 @@ function hostDamage(v,p,amount,head=false) {
 }
 function addPlayer(id, name) {
   const p = { id, name: cleanName(name), x: 0, y: 0, z: 0, yaw: 0, pitch: 0, hp: CFG.hp, alive: false, k: 0, d: 0,
-              hue: (hostState.hueCounter++ * 0.173) % 1, respawnAt: 0 };
+              hue: (hostState.hueCounter++ * 0.173) % 1, respawnAt: 0, stance: 0 };
   players.set(id, p);
   spawnPlayer(p);
   if (id !== 'H') hostEmit({ t: 'msg', text: `${p.name} が参加` });
@@ -529,6 +652,7 @@ function handleHostMsg(from, m) {
     case 'st':
       if (p.alive && [m.x, m.y, m.z, m.yaw, m.pitch].every(Number.isFinite)) {
         p.x = clamp(m.x, -A, A); p.y = clamp(m.y, 0, 10); p.z = clamp(m.z, -A, A); p.yaw = m.yaw; p.pitch = m.pitch;
+        p.stance = (m.s === 1 || m.s === 2) ? m.s : 0;
       }
       break;
     case 'shot': {
@@ -544,13 +668,16 @@ function handleHostMsg(from, m) {
       hostEmit({t:'hitfx',id:v.id}); hostDamage(v,p,m.head?CFG.dmgHead:CFG.dmgBody,!!m.head);
       break;
     }
-    case 'bomb': {
-      if(!p.alive || p.bombs<1 || hostState.win || ![m.x,m.y,m.z].every(Number.isFinite)) break;
-      p.bombs--;
-      let dx=m.x-p.x,dy=m.y-(p.y+CFG.eye),dz=m.z-p.z,dist=Math.hypot(dx,dy,dz);
-      const scale=dist>12?12/dist:1, bx=p.x+dx*scale, by=clamp(p.y+CFG.eye+dy*scale,0,8), bz=p.z+dz*scale;
-      hostEmit({t:'boom',x:bx,y:by,z:bz});
-      for(const v of players.values()) if(v.alive && v!==p) { const d=Math.hypot(v.x-bx,v.y+1-by,v.z-bz); if(d<5.5) hostDamage(v,p,Math.ceil(90*(1-d/6.5)),false); }
+    case 'placeC4': {
+      if(!p.alive||p.bombs<1||p.c4||hostState.win||![m.x,m.z].every(Number.isFinite))break;
+      const dx=m.x-p.x,dz=m.z-p.z,dist=Math.hypot(dx,dz),scale=dist>10?10/dist:1;
+      const bx=clamp(p.x+dx*scale,-A+.6,A-.6),bz=clamp(p.z+dz*scale,-A+.6,A-.6),by=groundAt(bx,bz,p.y)+.12;
+      p.c4={x:bx,y:by,z:bz};p.bombs=0;hostEmit({t:'c4place',id:p.id,x:bx,y:by,z:bz});break;
+    }
+    case 'detonateC4': {
+      if(!p.alive||!p.c4||hostState.win)break;
+      const {x:bx,y:by,z:bz}=p.c4;p.c4=null;hostEmit({t:'c4remove',id:p.id});hostEmit({t:'boom',x:bx,y:by,z:bz});
+      for(const v of players.values())if(v.alive&&v!==p){const d=Math.hypot(v.x-bx,v.y+1-by,v.z-bz);if(d<6.5)hostDamage(v,p,Math.max(0,Math.ceil(100*(1-d/7))),false);}
       break;
     }
   }
@@ -564,8 +691,11 @@ function hostTick() {
   } else if (!hostState.win) {
     for (const p of players.values()) if (!p.alive && now >= p.respawnAt) spawnPlayer(p);
   }
-  const snap = { t: 'snap', win: hostState.win, ps: [] };
-  for (const p of players.values()) snap.ps.push([p.id, p.name, p.x, p.y, p.z, p.yaw, p.pitch, p.hp, p.alive ? 1 : 0, p.k, p.d, p.hue, p.bombs]);
+  const snap = { t: 'snap', win: hostState.win, ps: [], c4: [] };
+  for (const p of players.values()) {
+    snap.ps.push([p.id, p.name, p.x, p.y, p.z, p.yaw, p.pitch, p.hp, p.alive ? 1 : 0, p.k, p.d, p.hue, p.bombs, p.stance | 0, !!p.c4]);
+    if(p.c4)snap.c4.push({id:p.id,x:p.c4.x,y:p.c4.y,z:p.c4.z});
+  }
   hostEmit(snap);
 }
 
@@ -706,25 +836,26 @@ async function joinByCode() {
    ========================================================= */
 function beginGame() {
   me.x = SPAWNS[0][0]; me.z = SPAWNS[0][1]; me.y = 0; me.vy = 0; me.yaw = Math.atan2(me.x, me.z); me.pitch = 0;
-  me.hp = CFG.hp; me.dead = false; me.k = 0; me.d = 0; me.bombs = 1; me.ammo = CFG.mag; me.reloading = false;
+  me.hp = CFG.hp; me.dead = false; me.k = 0; me.d = 0; me.bombs = 1; me.c4Placed=false; me.ammo = CFG.mag; me.reloading = false;
+  me.stance = 0; me.eye = CFG.eye; resetAim(); updateStanceButtons();
   gameWin = null; firing = false; boardData = [];
   $('feed').innerHTML = ''; $('banner').textContent = ''; $('deadmsg').classList.add('hidden');
   $('roomInfo').textContent = net.label + (net.isHost ? '(あなたがホスト)' : '');
   $('menu').classList.add('hidden'); $('hud').classList.remove('hidden');
-  if (isTouch) $('touch').classList.remove('hidden'); else { canvas.requestPointerLock && canvas.requestPointerLock(); }
-  running = true;
+  if (!isTouch) { canvas.requestPointerLock && canvas.requestPointerLock(); }
+  running = true; syncTouchUI();
   setBusy(false); setStatus('');
 }
 
 function leaveGame(msg) {
-  running = false; firing = false;
+  running = false; firing = false; resetAim(); if (editMode) closeLayoutEditor();
   try { if (document.pointerLockElement) document.exitPointerLock(); } catch (e) {}
   try { if (net.hostConn) net.hostConn.close(); } catch (e) {}
   for (const c of net.conns.values()) { try { c.close(); } catch (e) {} }
   try { if (net.peer) net.peer.destroy(); } catch (e) {}
   net.peer = null; net.hostConn = null; net.conns = new Map(); net.isHost = false; net.myId = null;
   players = new Map(); clearEnts(); clearTracers();
-  $('hud').classList.add('hidden'); $('touch').classList.add('hidden'); $('resume').classList.add('hidden');
+  $('hud').classList.add('hidden'); $('resume').classList.add('hidden'); syncTouchUI();
   $('menu').classList.remove('hidden');
   setBusy(false); setStatus(msg || '');
 }
@@ -738,6 +869,8 @@ addEventListener('keydown', e => {
   if (e.code === 'Space') { jumpReq = true; e.preventDefault(); }
   if (e.code === 'KeyR') reloadReq = true;
   if (e.code === 'KeyG') throwBomb();
+  if (e.code === 'KeyC' && !e.repeat) stanceReq = 'crouch';
+  if (e.code === 'KeyZ' && !e.repeat) stanceReq = 'prone';
 });
 addEventListener('keyup', e => { keys[e.code] = false; if (e.code === 'Space') jumpReq = false; });
 
@@ -751,12 +884,12 @@ document.addEventListener('mousemove', e => {
   me.yaw -= e.movementX * 0.0022 * sens;
   me.pitch = clamp(me.pitch - e.movementY * 0.0022 * sens, -1.5, 1.5);
 });
-document.addEventListener('mousedown', e => { if (running && document.pointerLockElement === canvas && e.button === 0) firing = true; if(running && document.pointerLockElement===canvas && e.button===2) aiming=true; });
-document.addEventListener('mouseup', e => { if (e.button === 0) firing = false; if(e.button===2) aiming=false; });
+document.addEventListener('mousedown', e => { if (running && document.pointerLockElement === canvas && e.button === 0) firing = true; if(running && document.pointerLockElement===canvas && e.button===2) setAim(true); });
+document.addEventListener('mouseup', e => { if (e.button === 0) firing = false; if(e.button===2) setAim(false); });
 document.addEventListener('pointerlockchange', () => {
   const locked = document.pointerLockElement === canvas;
   $('resume').classList.toggle('hidden', !(running && !isTouch && !locked));
-  if (!locked) { firing = false; aiming = false; }
+  if (!locked) { firing = false; setAim(false); }
 });
 $('resume').addEventListener('click', () => { initAudio(); canvas.requestPointerLock(); });
 
@@ -798,11 +931,58 @@ $('btnJump').addEventListener('pointerdown', () => { jumpReq = true; });
 $('btnJump').addEventListener('pointerup', () => { jumpReq = false; });
 $('btnJump').addEventListener('pointercancel', () => { jumpReq = false; });
 $('btnReload').addEventListener('pointerdown', () => { reloadReq = true; });
-$('btnBomb').addEventListener('pointerdown', e => {e.preventDefault(); throwBomb();});
-const ba=$('btnAim');
-ba.addEventListener('pointerdown',e=>{e.preventDefault();aiming=true;ba.classList.add('aiming');ba.setPointerCapture(e.pointerId);});
-const endAim=()=>{aiming=false;ba.classList.remove('aiming');};
-ba.addEventListener('pointerup',endAim); ba.addEventListener('pointercancel',endAim); ba.addEventListener('lostpointercapture',endAim);
+let bombPointer=null, bombPreviewActive=false;
+const bombPreview=new THREE.Mesh(new THREE.SphereGeometry(.18,12,8),new THREE.MeshBasicMaterial({color:0xffb347,transparent:true,opacity:.75}));
+bombPreview.visible=false; scene.add(bombPreview);
+function c4Target(){
+  camera.updateMatrixWorld(true);
+  const dir=new THREE.Vector3(); camera.getWorldDirection(dir);
+  const dist=6.5; const x=clamp(me.x+dir.x*dist,-A+.6,A-.6), z=clamp(me.z+dir.z*dist,-A+.6,A-.6);
+  return {x,y:groundAt(x,z,me.y)+.12,z};
+}
+function beginBombAction(){
+  if(!running||me.dead||gameWin)return;
+  if(me.c4Placed){ sendToHost({t:'detonateC4'}); return; }
+  if((me.bombs||0)<1)return;
+  bombPreviewActive=true; bombPreview.visible=true;
+}
+function releaseBombAction(){
+  if(!bombPreviewActive)return;
+  bombPreviewActive=false; bombPreview.visible=false;
+  const q=c4Target(); sendToHost({t:'placeC4',x:q.x,y:q.y,z:q.z});
+}
+const bombBtn=$('btnBomb');
+bombBtn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(bombPointer!==null)return;bombPointer=e.pointerId;try{bombBtn.setPointerCapture(e.pointerId);}catch(x){}beginBombAction();});
+bombBtn.addEventListener('pointerup',e=>{if(e.pointerId!==bombPointer)return;bombPointer=null;releaseBombAction();});
+bombBtn.addEventListener('pointercancel',e=>{if(e.pointerId!==bombPointer)return;bombPointer=null;releaseBombAction();});
+$('btnCrouch').addEventListener('pointerdown', e => { e.preventDefault(); stanceReq = 'crouch'; });
+$('btnProne').addEventListener('pointerdown', e => { e.preventDefault(); stanceReq = 'prone'; });
+// 照準ボタン: 押している間だけ構える / 素早くタップすると構えっぱなし(もう一度タップで解除)
+// → 構えっぱなしにすれば、左手で移動・右手で射撃しながら照準を保てる。別々の指で同時押しもOK。
+const ba = $('btnAim');
+let aimLock = false, aimId = null, aimDownAt = 0, aimConsumed = false, aimPX = 0, aimPY = 0;
+function setAim(on) { aiming = on; ba.classList.toggle('aiming', on); document.body.classList.toggle('isAiming', on); }
+function resetAim() { aimLock = false; aimId = null; setAim(false); }
+ba.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  if (aimId !== null) return;
+  aimId = e.pointerId; aimDownAt = performance.now(); aimPX=e.clientX; aimPY=e.clientY;
+  try { ba.setPointerCapture(e.pointerId); } catch (x) {}
+  if (aimLock) { aimLock = false; aimConsumed = true; setAim(false); }     // 構えっぱなし中のタップ → 解除
+  else { aimConsumed = false; setAim(true); }
+});
+ba.addEventListener('pointermove', e => {
+  if(e.pointerId!==aimId || !aiming) return;
+  lookBy(e.clientX-aimPX,e.clientY-aimPY); aimPX=e.clientX; aimPY=e.clientY;
+});
+ba.addEventListener('pointerup', e => {
+  if (e.pointerId !== aimId) return;
+  aimId = null;
+  if (aimConsumed) return;
+  if (performance.now() - aimDownAt < 260) aimLock = true;                 // 短いタップ → 構えっぱなし
+  else setAim(false);                                                       // 長押し → 離したら解除
+});
+ba.addEventListener('pointercancel', e => { if (e.pointerId !== aimId) return; aimId = null; if (!aimLock) setAim(false); });
 
 /* =========================================================
    射撃・爆発エフェクト
@@ -828,19 +1008,28 @@ function updateCombatFx(dt){
   for(let i=explosions.length-1;i>=0;i--){const e=explosions[i];e.life-=dt;const p=1-e.life/e.max;e.mesh.scale.setScalar(1+p*7);e.mesh.material.opacity=Math.max(0,e.life/e.max);e.light.intensity=6*(e.life/e.max);if(e.life<=0){scene.remove(e.mesh,e.light);e.mesh.geometry.dispose();e.mesh.material.dispose();explosions.splice(i,1);}}
 }
 function throwBomb(){
-  if(!running||me.dead||gameWin||me.bombs<1)return;
-  camera.updateMatrixWorld(true);const dir=new THREE.Vector3();camera.getWorldDirection(dir);
-  const pos=new THREE.Vector3(me.x,me.y+CFG.eye,me.z).addScaledVector(dir,8);
-  sendToHost({t:'bomb',x:pos.x,y:pos.y,z:pos.z}); me.bombs=Math.max(0,me.bombs-1);
-  sfx('kill',.45);
+  if(!running||me.dead||gameWin)return;
+  if(me.c4Placed) sendToHost({t:'detonateC4'});
+  else if(me.bombs>0){const q=c4Target();sendToHost({t:'placeC4',x:q.x,y:q.y,z:q.z});}
 }
 
 /* =========================================================
    自キャラの更新・射撃
    ========================================================= */
+function updateStanceButtons() {
+  $('btnCrouch').classList.toggle('on', me.stance === 1);
+  $('btnProne').classList.toggle('on', me.stance === 2);
+}
+function setStance(want) {
+  if (want === me.stance) return;
+  if (want < me.stance && blocked(me.x, me.z, me.y, STANCE[want].clear)) return;   // 頭上がふさがっていて立てない
+  me.stance = want; updateStanceButtons();
+}
+
 function startReload() {
   if (me.reloading || me.ammo >= CFG.mag) return;
-  me.reloading = true; me.reloadEnd = performance.now() + CFG.reloadMs;
+  me.reloading = true; me.reloadStart = performance.now(); me.reloadEnd = me.reloadStart + CFG.reloadMs;
+  sfx('hit',.45);
 }
 
 function fire() {
@@ -859,12 +1048,13 @@ function fire() {
   for (const e of ents.values()) {
     if (!e.alive) continue;
     const p = e.mesh.position;
-    const t = rayAABB(ox, oy, oz, dir.x, dir.y, dir.z, p.x - 0.4, p.y, p.z - 0.4, p.x + 0.4, p.y + 1.8, p.z + 0.4);
+    const st = STANCE[e.tstance | 0] || STANCE[0];
+    const t = rayAABB(ox, oy, oz, dir.x, dir.y, dir.z, p.x - st.hw, p.y, p.z - st.hw, p.x + st.hw, p.y + st.h, p.z + st.hw);
     if (t >= 0 && t < tP) { tP = t; best = e; }
   }
   const ex = ox + dir.x * tP, ey = oy + dir.y * tP, ez = oz + dir.z * tP;
   if (best) {
-    const head = ey > best.mesh.position.y + 1.45;
+    const head = ey > best.mesh.position.y + (STANCE[best.tstance | 0] || STANCE[0]).headY;
     sendToHost({ t: 'hit', id: best.id, head });
     showHitMarker(head); sfx('hit');
   }
@@ -880,6 +1070,11 @@ function updateMe(dt) {
   const now = performance.now();
   if (me.dead) { camera.position.set(me.x, me.y + 0.5, me.z); camera.rotation.set(me.pitch, me.yaw, 0); return; }
 
+  // 姿勢の切り替え(しゃがむ/伏せるはタップで切替、ジャンプで立ち上がる)
+  if (stanceReq) { const want = stanceReq === 'crouch' ? (me.stance === 1 ? 0 : 1) : (me.stance === 2 ? 0 : 2); stanceReq = null; setStance(want); }
+  if (jumpReq && me.stance !== 0) { setStance(0); jumpReq = false; }
+  const stc = STANCE[me.stance];
+
   let ix = 0, iz = 0;
   if (keys.KeyW || keys.ArrowUp) iz += 1;
   if (keys.KeyS || keys.ArrowDown) iz -= 1;
@@ -888,24 +1083,53 @@ function updateMe(dt) {
   if (Math.hypot(joy.x, joy.y) > 0.12) { ix += joy.x; iz += -joy.y; }
   const len = Math.hypot(ix, iz); if (len > 1) { ix /= len; iz /= len; }
   const sy = Math.sin(me.yaw), cy = Math.cos(me.yaw);
-  const vx = (-sy * iz + cy * ix) * CFG.speed, vz = (-cy * iz - sy * ix) * CFG.speed;
-  const nx = me.x + vx * dt; if (!blocked(nx, me.z, me.y)) me.x = nx;
-  const nz = me.z + vz * dt; if (!blocked(me.x, nz, me.y)) me.z = nz;
+  const spd = CFG.speed * stc.speed;
+  const vx = (-sy * iz + cy * ix) * spd, vz = (-cy * iz - sy * ix) * spd;
+  const moving = len > 0.08 && me.onGround;
+  if(moving) walkClock += dt * (me.stance===0 ? 10.5 : 7.2) * Math.min(1,len);
+  const nx = me.x + vx * dt; if (!blocked(nx, me.z, me.y, stc.clear)) me.x = nx;
+  const nz = me.z + vz * dt; if (!blocked(me.x, nz, me.y, stc.clear)) me.z = nz;
   me.x = clamp(me.x, -A + 0.5, A - 0.5); me.z = clamp(me.z, -A + 0.5, A - 0.5);
 
   const g = groundAt(me.x, me.z, me.y);
   if (jumpReq && me.onGround) { me.vy = CFG.jump; me.onGround = false; }
+  if (me.vy > 0) {                                  // 頭上に天井(2階の床など)があれば頭をぶつける
+    const headTop = me.y + stc.clear, R = CFG.radius;
+    for (const b of BOXES) {
+      const bottom = b.y || 0;
+      if (bottom >= headTop - 0.05 && bottom <= headTop + me.vy * dt + 0.05 && me.x > b.cx - b.hw - R && me.x < b.cx + b.hw + R && me.z > b.cz - b.hd - R && me.z < b.cz + b.hd + R) { me.vy = 0; break; }
+    }
+  }
   me.vy -= CFG.gravity * dt; me.y += me.vy * dt;
   if (me.y <= g) { me.y = g; me.vy = 0; me.onGround = true; } else if (me.y > g + 0.01) me.onGround = false;
 
-  camera.position.set(me.x, me.y + CFG.eye, me.z);
-  camera.rotation.set(me.pitch, me.yaw, 0);
-  const fov=aiming?49:75; if(camera.fov!==fov){camera.fov=fov;camera.updateProjectionMatrix();}
+  me.eye += (stc.eye - me.eye) * Math.min(1, dt * 14);
+  const bobAmt = moving ? (me.stance===0 ? 1 : .55) : 0;
+  const bobY = Math.abs(Math.sin(walkClock*2)) * .035 * bobAmt;
+  const swayX = Math.sin(walkClock) * .018 * bobAmt;
+  camera.position.set(me.x+swayX, me.y + me.eye + bobY, me.z);
+  camera.rotation.set(me.pitch + (moving ? Math.sin(walkClock*2)*.006*bobAmt : 0), me.yaw + (moving ? Math.sin(walkClock)*.004*bobAmt : 0), moving ? -Math.sin(walkClock)*.006*bobAmt : 0);
+  const fov=aiming?43:75; if(camera.fov!==fov){camera.fov=fov;camera.updateProjectionMatrix();}
   if(shakeTimer>0){shakeTimer=Math.max(0,shakeTimer-dt);camera.rotation.x+= (Math.random()-.5)*.055;camera.rotation.y+=(Math.random()-.5)*.04;}
   viewGun.position.x=aiming?.10:.24; viewGun.position.y=aiming?-.18:-.22;
-  viewGun.position.z = (aiming?-.40:-.5) + recoil * .09; viewGun.rotation.x=recoil*.12;
+  viewGun.position.z = (aiming?-.40:-.5) + recoil * .09;
+  const rp=me.reloading?clamp((now-me.reloadStart)/CFG.reloadMs,0,1):0;
+  const mag=viewGun.userData.magazine;
+  if(mag){
+    mag.visible=!(me.reloading && rp>.43 && rp<.61);
+    const out=rp<.2?0:rp<.43?(rp-.2)/.23:rp<.61?1:rp<.82?(.82-rp)/.21:0;
+    mag.position.y=-.105-out*.25;
+  }
+  viewGun.rotation.x=recoil*.12+(me.reloading?Math.sin(rp*Math.PI)*.18:0);
+  viewGun.rotation.z=me.reloading?Math.sin(rp*Math.PI)*.16:0;
+  if(window.reloadHand){
+    window.reloadHand.visible=me.reloading;
+    const handIn=me.reloading?Math.sin(clamp((rp-.12)/.66,0,1)*Math.PI):0;
+    window.reloadHand.position.set(-.24+handIn*.13,-.48+handIn*.18,-.40-handIn*.10);
+    window.reloadHand.rotation.set(-handIn*.8,0,-handIn*.25);
+  }
 
-  if (me.reloading && now >= me.reloadEnd) { me.reloading = false; me.ammo = CFG.mag; }
+  if (me.reloading && now >= me.reloadEnd) { me.reloading = false; me.ammo = CFG.mag; if(window.reloadHand)window.reloadHand.visible=false; }
   if (reloadReq) { reloadReq = false; startReload(); }
   if (firing && !gameWin && now - me.lastShot >= CFG.fireMs && !me.reloading) {
     if (me.ammo > 0) fire(); else startReload();
@@ -916,12 +1140,12 @@ function updateMe(dt) {
 /* =========================================================
    毎フレーム処理
    ========================================================= */
-let sendAcc = 0, boardAcc = 0;
+let sendAcc = 0, boardAcc = 0, walkClock = 0;
 function netUpdate(dt) {
   sendAcc += dt;
   if (sendAcc < 1 / CFG.sendHz) return;
   sendAcc = 0;
-  if (!me.dead) sendToHost({ t: 'st', x: me.x, y: me.y, z: me.z, yaw: me.yaw, pitch: me.pitch });
+  if (!me.dead) sendToHost({ t: 'st', x: me.x, y: me.y, z: me.z, yaw: me.yaw, pitch: me.pitch, s: me.stance });
   if (net.isHost) hostTick();
 }
 
@@ -931,6 +1155,9 @@ function updateEnts(dt) {
     e.mesh.visible = e.alive;
     if(e.corpse){e.corpse.visible=now<e.deadUntil;if(now>=e.deadUntil)discardCorpse(e);}
     const m=e.mesh;
+    const ts=(STANCE[e.tstance|0]||STANCE[0]).h/STANCE[0].h;
+    m.scale.y+=(ts-m.scale.y)*k;
+    const lb=m.userData.label; if(lb){lb.scale.set(2,.5/m.scale.y,1);lb.position.y=1.8+.5/m.scale.y;}
     if(e.alive || now<e.deadUntil){
       m.position.x+=(e.tx-m.position.x)*k; m.position.y+=(e.ty-m.position.y)*k; m.position.z+=(e.tz-m.position.z)*k;
       let dy=e.tyaw-m.rotation.y;dy=Math.atan2(Math.sin(dy),Math.cos(dy));m.rotation.y+=dy*k;
@@ -953,7 +1180,7 @@ function addFeed(text) {
 
 function updateHud(dt) {
   $('ammo').textContent = me.reloading ? 'リロード中…' : `${me.ammo} / ${CFG.mag}`;
-  $('bombInfo').textContent = `C4 ${me.bombs||0}`;
+  $('bombInfo').textContent = me.c4Placed ? 'C4 設置済 / ボタンで起爆' : `C4 ${me.bombs||0}（長押し設置）`;
   $('banner').textContent = gameWin ? `🏆 ${gameWin} の勝利!` : '';
   boardAcc += dt;
   if (boardAcc > 0.25) {
@@ -974,10 +1201,12 @@ function loop(t) {
   requestAnimationFrame(loop);
   const dt = Math.min((t - lastT) / 1000, 0.05); lastT = t;
   if (running) {
-    updateMe(dt); netUpdate(dt); updateEnts(dt); updateTracers(dt); updateCombatFx(dt); updateHud(dt);
+    updateMe(dt);
+    if(bombPreviewActive){const q=c4Target();bombPreview.position.set(q.x,q.y,q.z);}
+    netUpdate(dt); updateEnts(dt); updateTracers(dt); updateCombatFx(dt); updateHud(dt);
   } else {
     const a = t * 0.00012;
-    camera.position.set(Math.cos(a) * 38, 14, Math.sin(a) * 38); camera.lookAt(0, 1, 0);
+    camera.position.set(Math.cos(a) * 46, 16, Math.sin(a) * 46); camera.lookAt(0, 1, 0);
   }
   renderer.render(scene, camera);
 }
@@ -989,17 +1218,106 @@ requestAnimationFrame(loop);
 $('nameInput').value = localStorage.getItem('fps_name') || ('Player' + (100 + Math.floor(Math.random() * 900)));
 sens = parseFloat(localStorage.getItem('fps_sens')) || 1; $('sensInput').value = sens;
 $('sensInput').addEventListener('input', e => { sens = parseFloat(e.target.value); try { localStorage.setItem('fps_sens', sens); } catch (x) {} });
-const touchDefaults={fireX:88,fireY:78,fireSize:112,aimX:72,aimY:76,aimSize:82};
-const touchSettings={...touchDefaults};
-Object.keys(touchDefaults).forEach(key=>{const saved=parseFloat(localStorage.getItem('fps_'+key));if(Number.isFinite(saved))touchSettings[key]=saved;});
-function applyTouchSettings(){
-  const root=document.documentElement.style;
-  root.setProperty('--touch-x',touchSettings.fireX+'%');root.setProperty('--touch-y',touchSettings.fireY+'%');root.setProperty('--fire-size',touchSettings.fireSize+'px');
-  root.setProperty('--aim-x',touchSettings.aimX+'%');root.setProperty('--aim-y',touchSettings.aimY+'%');root.setProperty('--aim-size',touchSettings.aimSize+'px');
-  Object.keys(touchSettings).forEach(key=>{const input=$(key+'Input'),out=$(key+'Out');input.value=touchSettings[key];out.value=key.toLowerCase().includes('size')?touchSettings[key]+'px':touchSettings[key]+'%';});
+/* =========================================================
+   タッチボタンの配置(ドラッグで好きな位置へ・サイズも変更可)
+   位置は画面に対する%、大きさはpx。端末ごとにlocalStorageへ保存。
+   ========================================================= */
+const BTN_IDS = { fire: 'btnFire', aim: 'btnAim', jump: 'btnJump', reload: 'btnReload', crouch: 'btnCrouch', prone: 'btnProne', bomb: 'btnBomb' };
+const BTN_NAMES = { fire: '射撃', aim: '照準', jump: 'ジャンプ', reload: 'リロード', crouch: 'しゃがむ', prone: '伏せる', bomb: '爆弾' };
+const BTN_DEFAULTS = {
+  fire:   { x: 88, y: 68, s: 112 },
+  aim:    { x: 74, y: 74, s: 84 },
+  jump:   { x: 90, y: 88, s: 80 },
+  reload: { x: 78, y: 90, s: 64 },
+  crouch: { x: 7,  y: 56, s: 64 },
+  prone:  { x: 7,  y: 72, s: 64 },
+  bomb:   { x: 7,  y: 40, s: 64 },
+};
+const btnLayout = {};
+for (const k in BTN_DEFAULTS) btnLayout[k] = { ...BTN_DEFAULTS[k] };
+(function loadLayout() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('fps_btnlayout') || 'null');
+    if (saved) {
+      for (const k in BTN_DEFAULTS) { const v = saved[k]; if (v && [v.x, v.y, v.s].every(Number.isFinite)) btnLayout[k] = { x: v.x, y: v.y, s: v.s }; }
+    } else {                                           // 旧バージョン(スライダー設定)の射撃・照準の値を引き継ぐ
+      const old = n => parseFloat(localStorage.getItem('fps_' + n));
+      [['fire', 'fireX', 'fireY', 'fireSize'], ['aim', 'aimX', 'aimY', 'aimSize']].forEach(([k, x, y, s]) => {
+        if (Number.isFinite(old(x))) btnLayout[k].x = old(x);
+        if (Number.isFinite(old(y))) btnLayout[k].y = old(y);
+        if (Number.isFinite(old(s))) btnLayout[k].s = old(s);
+      });
+    }
+  } catch (e) {}
+})();
+function applyBtn(k) { const el = $(BTN_IDS[k]), L = btnLayout[k]; el.style.left = L.x + '%'; el.style.top = L.y + '%'; el.style.setProperty('--bs', L.s + 'px'); }
+function applyAllBtns() { for (const k in BTN_IDS) { $(BTN_IDS[k]).dataset.label = BTN_NAMES[k]; applyBtn(k); } }
+function saveLayout() { try { localStorage.setItem('fps_btnlayout', JSON.stringify(btnLayout)); } catch (e) {} }
+applyAllBtns();
+
+// タッチ操作UIの表示切替(プレイ中のタブレット or 配置編集中だけ表示)
+function syncTouchUI() {
+  $('touch').classList.toggle('hidden', !(editMode || (running && isTouch)));
+  $('hudBtns').classList.toggle('hidden', !running || editMode);
+  $('btnLayout').style.display = isTouch ? '' : 'none';
 }
-Object.keys(touchSettings).forEach(key=>$(key+'Input').addEventListener('input',e=>{touchSettings[key]=parseFloat(e.target.value);try{localStorage.setItem('fps_'+key,touchSettings[key]);}catch(x){}applyTouchSettings();}));
-applyTouchSettings();
+
+let editSel = 'fire', editDrag = null;
+function selectBtn(k) {
+  editSel = k;
+  document.querySelectorAll('.tbtn').forEach(b => b.classList.toggle('sel', b.dataset.key === k));
+  $('editSizeName').textContent = BTN_NAMES[k];
+  $('editSize').value = btnLayout[k].s; $('editSizeOut').textContent = btnLayout[k].s + 'px';
+}
+function openLayoutEditor() {
+  editMode = true; editDrag = null;
+  firing = false; resetAim(); joy.x = joy.y = 0; stickId = null; lookId = null; fireId = null;   // 操作中の指を解放
+  sBase.style.display = 'none';
+  $('menu').classList.add('hidden');
+  $('touch').classList.add('editing'); $('layoutEditor').classList.remove('hidden');
+  selectBtn(editSel); syncTouchUI();
+}
+function closeLayoutEditor() {
+  editMode = false; editDrag = null; saveLayout();
+  $('touch').classList.remove('editing'); $('layoutEditor').classList.add('hidden');
+  document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('sel'));
+  if (!running) $('menu').classList.remove('hidden');
+  syncTouchUI();
+}
+// 編集中は、ゲーム用のボタン処理に届く前(captureフェーズ)にここで受け取ってドラッグ移動にする
+const touchEl = $('touch');
+touchEl.addEventListener('pointerdown', e => {
+  if (!editMode) return;
+  e.stopPropagation(); e.preventDefault();
+  const el = e.target.closest && e.target.closest('.tbtn'); if (!el) return;
+  const r = el.getBoundingClientRect();
+  editDrag = { id: e.pointerId, key: el.dataset.key, dx: e.clientX - (r.left + r.width / 2), dy: e.clientY - (r.top + r.height / 2) };
+  selectBtn(editDrag.key);
+  try { el.setPointerCapture(e.pointerId); } catch (x) {}
+}, true);
+touchEl.addEventListener('pointermove', e => {
+  if (!editMode) return;
+  e.stopPropagation();
+  if (!editDrag || e.pointerId !== editDrag.id) return;
+  const L = btnLayout[editDrag.key];
+  L.x = Math.round(clamp((e.clientX - editDrag.dx) / innerWidth * 1000, 30, 970)) / 10;
+  L.y = Math.round(clamp((e.clientY - editDrag.dy) / innerHeight * 1000, 120, 970)) / 10;
+  applyBtn(editDrag.key);
+}, true);
+const endEditDrag = e => {
+  if (!editMode) return;
+  e.stopPropagation();
+  if (editDrag && e.pointerId === editDrag.id) { editDrag = null; saveLayout(); }
+};
+touchEl.addEventListener('pointerup', endEditDrag, true);
+touchEl.addEventListener('pointercancel', endEditDrag, true);
+$('editSize').addEventListener('input', e => { const L = btnLayout[editSel]; L.s = parseFloat(e.target.value); applyBtn(editSel); $('editSizeOut').textContent = L.s + 'px'; });
+$('editSize').addEventListener('change', saveLayout);
+$('editReset').addEventListener('click', () => { for (const k in BTN_DEFAULTS) btnLayout[k] = { ...BTN_DEFAULTS[k] }; applyAllBtns(); selectBtn(editSel); saveLayout(); });
+$('editDone').addEventListener('click', closeLayoutEditor);
+$('btnEditLayout').addEventListener('click', openLayoutEditor);
+$('btnLayout').addEventListener('click', openLayoutEditor);
+syncTouchUI();
 
 function prepare() {
   initAudio();
