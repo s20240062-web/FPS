@@ -738,9 +738,9 @@ const CFG = {
 };
 // 姿勢: 0=立ち 1=しゃがみ 2=伏せ  (eye=目線の高さ / clear=必要な頭上の空き / h・hw=当たり判定の高さ・半幅 / headY=頭判定が始まる高さ / speed=移動速度の倍率)
 const STANCE = [
-  { eye: CFG.eye, clear: 1.72, h: 1.8,  hw: 0.30, headY: 1.45, speed: 1 },
-  { eye: 1.1,     clear: 1.2,  h: 1.25, hw: 0.30, headY: 0.95, speed: 0.5 },
-  { eye: 0.45,    clear: 0.55, h: 0.6,  hw: 0.38, headY: 0.35, speed: 0.22 },
+  { eye: CFG.eye, clear: 1.72, h: 1.8,  hw: 0.30, headY: 1.45, speed: 1,    scale: 1 },
+  { eye: 1.1,     clear: 1.2,  h: 1.25, hw: 0.30, headY: 0.95, speed: 0.5,  scale: 0.69 },
+  { eye: 0.45,    clear: 0.55, h: 0.6,  hw: 0.38, headY: 0.35, speed: 0.22, scale: 0.34 },
 ];
 const PUB_PREFIX  = 'fpsarena-x7q-town-pub-';   // クイック参加用の公開ルームID
 const ROOM_PREFIX = 'fpsarena-x7q-town-room-';   // コード指定の部屋ID
@@ -1383,7 +1383,7 @@ function applySnap(s) {
       const wasAlive=e.alive, nextAlive=!!alive;
       if (wasAlive && !nextAlive) { e.deadUntil=performance.now()+8500; createCorpse(e); }
       if (!wasAlive && nextAlive && !e.fresh) { e.mesh.position.set(x,y,z); e.mesh.rotation.set(0,yaw,0); }
-      e.tx = x; e.ty = y; e.tz = z; e.tyaw = yaw; e.tpitch = pitch; e.alive = nextAlive; e.tstance = stance | 0;
+      e.tx = x; e.ty = y; e.tz = z; e.tyaw = yaw; e.tpitch = pitch; e.alive = nextAlive; e.tstance = stance | 0; e.stance = e.tstance;
       if (e.fresh) { e.mesh.position.set(x, y, z); e.mesh.rotation.y = yaw; e.fresh = false; }
     }
   }
@@ -2002,7 +2002,7 @@ function fire() {
   let best = null, tP = tWall;
   for (const e of ents.values()) {
     if (!e.alive) continue;
-    const st = STANCE[e.stance || 0], p = e.mesh.position, r = CFG.hitRadius;
+    const st = STANCE[e.tstance || 0], p = e.mesh.position, r = CFG.hitRadius;
     const tb = rayAABB(ox, oy, oz, dir.x, dir.y, dir.z, p.x - r, p.y, p.z - r, p.x + r, p.y + st.h, p.z + r);
     if (tb >= 0 && tb < tP) {
       const hy = oy + dir.y * tb;
@@ -2123,7 +2123,7 @@ function updateEnts(dt) {
       const px = m.position.x, pz = m.position.z;
       m.position.x += (e.tx - m.position.x) * k; m.position.y += (e.ty - m.position.y) * k; m.position.z += (e.tz - m.position.z) * k;
       let dy = e.tyaw - m.rotation.y; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); m.rotation.y += dy * k;
-      const ts = STANCE[e.stance || 0].scale; m.scale.y += (ts - m.scale.y) * k;
+      const ts = STANCE[e.tstance || 0].scale; m.scale.y += (ts - m.scale.y) * k;
       const U = m.userData;
       U.head.rotation.x = e.tpitch * 0.8; U.aim.rotation.x = e.tpitch * 0.85;
       const sp = Math.hypot(m.position.x - px, m.position.z - pz) / Math.max(dt, 1e-3);
