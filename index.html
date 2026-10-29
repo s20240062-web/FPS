@@ -2002,7 +2002,7 @@ function fire() {
   let best = null, tP = tWall;
   for (const e of ents.values()) {
     if (!e.alive) continue;
-    const st = STANCE[e.tstance || 0], p = e.mesh.position, r = CFG.hitRadius;
+    const st = STANCE[e.tstance || 0], p = e.mesh.position, r = st.hw;
     const tb = rayAABB(ox, oy, oz, dir.x, dir.y, dir.z, p.x - r, p.y, p.z - r, p.x + r, p.y + st.h, p.z + r);
     if (tb >= 0 && tb < tP) {
       const hy = oy + dir.y * tb;
